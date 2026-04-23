@@ -7,30 +7,52 @@
 async function downloadAsJpeg(canvasEl, filename = '상세페이지') {
   showToast('JPEG 파일 생성 중...', 'info');
 
+  // 양사이드 여백 임시 제거: .section-overlay 바로 아래 섹션 루트 div의 좌우 padding을 0으로
+  const modified = [];
+  canvasEl.querySelectorAll('.section-overlay > div[id]').forEach(el => {
+    const cs = window.getComputedStyle(el);
+    const pl = parseFloat(cs.paddingLeft)  || 0;
+    const pr = parseFloat(cs.paddingRight) || 0;
+    if (pl > 0 || pr > 0) {
+      const origStyle = el.getAttribute('style') || '';
+      el.style.paddingLeft  = '0px';
+      el.style.paddingRight = '0px';
+      modified.push({ el, origStyle });
+    }
+  });
+
+  const W = canvasEl.scrollWidth;
+  const H = canvasEl.scrollHeight;
+
   const opt = {
     scale: 2,
     useCORS: true,
     allowTaint: true,
     backgroundColor: '#ffffff',
     logging: false,
-    width: canvasEl.scrollWidth,
-    height: canvasEl.scrollHeight,
-    windowWidth: canvasEl.scrollWidth,
-    windowHeight: canvasEl.scrollHeight,
+    width: W,
+    height: H,
+    windowWidth: W,
+    windowHeight: H,
   };
 
   try {
-    const canvas = await html2canvas(canvasEl, opt);
+    const img = await html2canvas(canvasEl, opt);
     const link = document.createElement('a');
     link.download = `${filename}_${formatDate(new Date())}.jpg`;
-    link.href = canvas.toDataURL('image/jpeg', 0.92);
+    link.href = img.toDataURL('image/jpeg', 0.92);
     link.click();
     showToast('다운로드 완료!', 'success');
-    return canvas;
+    return img;
   } catch (e) {
     console.error('다운로드 오류:', e);
     showToast('다운로드 실패. 이미지 CORS 설정을 확인하세요.', 'error');
     throw e;
+  } finally {
+    // 여백 원복
+    modified.forEach(({ el, origStyle }) => {
+      el.setAttribute('style', origStyle);
+    });
   }
 }
 
@@ -200,10 +222,12 @@ function generateAITemplate(category, style = 'standard') {
 // ── 섹션 렌더링 (공통) ─────────────────────────
 // window.DC_EDITOR = true 일 때 에디터 전용 UI (직접 클릭 업로드) 활성화
 
-function _imgPlaceholder(label, clickAttr, minH) {
+function _imgPlaceholder(label, clickAttr, minH, dropAttrs) {
   const h = minH || 260;
   const cursor = clickAttr ? 'cursor:pointer;' : '';
-  return `<div ${clickAttr || ''} style="background:#f5f5f5;min-height:${h}px;display:flex;
+  const drag = dropAttrs || '';
+  return `<div ${clickAttr || ''} ${drag}
+    style="background:#f5f5f5;min-height:${h}px;display:flex;
     flex-direction:column;align-items:center;justify-content:center;
     color:#c0c0c0;border:2px dashed #e0e0e0;width:100%;${cursor}
     transition:background 0.15s,border-color 0.15s;"
@@ -218,17 +242,18 @@ function _imgPlaceholder(label, clickAttr, minH) {
       </svg>
     </div>
     <span style="font-size:13px;font-weight:600;color:#999;">${label || '이미지 업로드'}</span>
-    ${clickAttr ? '<span style="font-size:11px;color:#b0b0b0;margin-top:4px;">클릭하여 이미지 선택</span>' : ''}
+    ${clickAttr ? '<span style="font-size:11px;color:#b0b0b0;margin-top:4px;">클릭 또는 드래그&드롭</span>' : ''}
   </div>`;
 }
 
-function _imgWithOverlay(src, alt, clickAttr) {
-  if (!clickAttr) {
+function _imgWithOverlay(src, alt, clickAttr, dropAttrs) {
+  const drag = dropAttrs || '';
+  if (!clickAttr && !drag) {
     return `<img src="${src}" style="width:100%;display:block;" alt="${alt||''}">`;
   }
   return `<div style="position:relative;line-height:0;">
     <img src="${src}" style="width:100%;display:block;" alt="${alt||''}">
-    <div ${clickAttr}
+    <div ${clickAttr || ''} ${drag}
       style="position:absolute;inset:0;background:transparent;display:flex;align-items:center;
         justify-content:center;cursor:pointer;transition:background 0.2s;"
       onmouseenter="this.style.background='rgba(0,0,0,0.35)';this.querySelector('.chg-lbl').style.opacity='1'"
@@ -241,7 +266,7 @@ function _imgWithOverlay(src, alt, clickAttr) {
             d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
         </svg>
-        이미지 변경
+        클릭 또는 드래그&드롭
       </div>
     </div>
   </div>`;
@@ -260,11 +285,16 @@ function renderSectionHTML(section) {
     const brandText = section.brandText !== undefined ? section.brandText : 'Withlaon';
     const textColor = section.textColor || '#ffffff';
     const gradStop  = section.gradStop  !== undefined ? section.gradStop : 42;
-    const gradColor = section.gradColor || 'rgba(0,0,0,0.72)';
+    const gradColor = section.gradColor || 'rgba(109,40,217,0.55)';
     // 에디터 전용 업로드 핸들러 (triggerImageUpload는 editor.js에 정의됨)
     const uploadFn = `triggerImageUpload('${id}')`;
 
     // 이미지 or 플레이스홀더
+    const heroDrop = isEditor
+      ? `ondragover="event.stopPropagation();handleCanvasDragOver(event,this)"
+         ondragleave="handleCanvasDragLeave(event,this)"
+         ondrop="handleCanvasDrop(event,'${id}',0)"`
+      : '';
     let imgEl = '';
     if (section.imageUrl) {
       imgEl = `<img src="${section.imageUrl}"
@@ -272,7 +302,7 @@ function renderSectionHTML(section) {
         alt="${section.label||''}">`;
     } else {
       const clickAttr = isEditor ? `onclick="event.stopPropagation();${uploadFn}"` : '';
-      imgEl = `<div ${clickAttr}
+      imgEl = `<div ${clickAttr} ${heroDrop}
         style="position:absolute;inset:0;z-index:1;background:#f0f0f0;
           display:flex;flex-direction:column;align-items:center;justify-content:center;
           color:#bbb;border:2px dashed #ddd;${isEditor?'cursor:pointer;':''}"
@@ -291,7 +321,7 @@ function renderSectionHTML(section) {
         </div>
         <span style="font-size:14px;font-weight:600;color:#bbb;">대표 이미지 업로드</span>
         <span style="font-size:12px;color:#ccc;margin-top:4px;">3:4 비율 권장</span>
-        ${isEditor ? '<span style="font-size:11px;color:#aaa;margin-top:6px;background:#e8e8e8;padding:4px 12px;border-radius:20px;">클릭하여 파일 선택</span>' : ''}
+        ${isEditor ? '<span style="font-size:11px;color:#aaa;margin-top:6px;background:#e8e8e8;padding:4px 12px;border-radius:20px;">클릭 또는 드래그&드롭</span>' : ''}
       </div>`;
     }
 
@@ -307,6 +337,14 @@ function renderSectionHTML(section) {
         ${brandText ? `<p style="font-size:30px;color:${textColor};margin:0;
           font-family:'Great Vibes','Dancing Script',cursive;
           text-shadow:0 1px 6px rgba(0,0,0,0.25);letter-spacing:0.02em;">${brandText}</p>` : ''}
+      </div>` : '';
+
+    // 이미지 있을 때 드롭 오버레이 (z-index:4)
+    const heroDropOverlay = (isEditor && section.imageUrl) ? `
+      <div ${heroDrop}
+        style="position:absolute;inset:0;z-index:4;pointer-events:auto;background:transparent;"
+        onmouseenter="this.style.background='rgba(109,40,217,0.08)'"
+        onmouseleave="this.style.background='transparent'">
       </div>` : '';
 
     // 에디터 변경 버튼 (이미지 있을 때만, z-index:5)
@@ -334,46 +372,41 @@ function renderSectionHTML(section) {
       <div style="position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:${radius}px;">
         ${imgEl}
         ${textOverlay}
+        ${heroDropOverlay}
         ${changeBtn}
       </div>
     </div>`;
   }
 
-  // ── 홍보문구 (Promo) ──────────────────────────
+  // ── 홍보문구 (Promo) — subText 단일 필드 표시 ──
   if (section.type === 'promo') {
-    const bg        = section.bgColor   || '#ffffff';
-    const pv        = section.paddingV  !== undefined ? section.paddingV  : 50;
-    const ph        = section.paddingH  !== undefined ? section.paddingH  : 40;
-    const rawMain   = section.mainText  || '';
-    const rawSub    = section.subText   || '';
-    const mainText  = rawMain.replace(/\n/g, '<br>');
-    const subText   = rawSub.replace(/\n/g, '<br>');
-    const mainSize  = section.mainFontSize !== undefined ? section.mainFontSize : 22;
-    const subSize   = section.subFontSize  !== undefined ? section.subFontSize  : 14;
-    const textColor = section.textColor  || '#1a1a1a';
-    const subColor  = section.subColor   || '#888888';
-    const lineColor = section.lineColor  || '#dddddd';
-    const align     = section.textAlign  || 'center';
-    const isEmpty   = !rawMain && !rawSub;
+    const bg       = section.bgColor  || '#ffffff';
+    const pv       = section.paddingV !== undefined ? section.paddingV : 50;
+    const ph       = section.paddingH !== undefined ? section.paddingH : 40;
+    const rawSub   = section.subText  || '';
+    const promoTxt = rawSub.replace(/\n/g, '<br>');
+    const subSize  = section.subFontSize !== undefined ? section.subFontSize : 16;
+    const subColor = section.subColor || '#444444';
+    const lineColor = section.lineColor || '#dddddd';
+    const align    = section.textAlign || 'center';
+    const isEmpty  = !rawSub;
 
-    // 에디터에서 비어있을 때: 클릭 유도 영역 표시
+    // 에디터에서 비어있을 때: 클릭 유도
     if (isEmpty && isEditor) {
       return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;text-align:center;
-        border:2px dashed #f0d0a0;cursor:pointer;"
-        onclick="event.stopPropagation();selectSection('${id}');document.querySelector('#propPanel textarea')?.focus()">
-        <p style="font-size:14px;color:#ccc;margin:0;font-family:'Noto Sans KR',sans-serif;">
-          📝 오른쪽 패널에서 홍보 문구를 입력하세요
+        border:2px dashed #d4b3fa;cursor:pointer;"
+        onclick="event.stopPropagation();selectSection('${id}');setTimeout(()=>document.querySelector('#propPanel textarea')?.focus(),100)">
+        <p style="font-size:14px;color:#c4b5d0;margin:0;font-family:'Noto Sans KR',sans-serif;">
+          ✏️ 오른쪽 패널에서 홍보 문구를 입력하세요
         </p>
       </div>`;
     }
 
     return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;text-align:${align};">
-      ${mainText ? `<p style="font-size:${mainSize}px;font-weight:bold;color:${textColor};
-        margin:0 0 16px;line-height:1.6;font-family:'Noto Sans KR',sans-serif;">${mainText}</p>` : ''}
-      ${(mainText || subText) ? `<div style="width:28px;height:2px;background:${lineColor};
-        margin:0 ${align==='center'?'auto':align==='right'?'0 0 0 auto':'0'} 16px;"></div>` : ''}
-      ${subText ? `<p style="font-size:${subSize}px;color:${subColor};margin:0;
-        line-height:1.9;font-family:'Noto Sans KR',sans-serif;">${subText}</p>` : ''}
+      <div style="width:30px;height:2px;background:${lineColor};
+        margin:0 ${align==='center'?'auto':align==='right'?'0 0 0 auto':'0'} 18px;"></div>
+      <p style="font-size:${subSize}px;color:${subColor};margin:0;
+        line-height:1.9;font-family:'Noto Sans KR',sans-serif;font-weight:500;">${promoTxt}</p>
     </div>`;
   }
 
@@ -382,11 +415,15 @@ function renderSectionHTML(section) {
     const bg  = section.bgColor  || '#ffffff';
     const pad = section.padding  || 0;
     const click = isEditor ? `onclick="event.stopPropagation();editorUploadImage('${id}')"` : '';
+    const drop  = isEditor
+      ? `ondragover="event.stopPropagation();handleCanvasDragOver(event,this)"
+         ondragleave="handleCanvasDragLeave(event,this)"
+         ondrop="handleCanvasDrop(event,'${id}',0)"` : '';
     let inner;
     if (section.imageUrl) {
-      inner = _imgWithOverlay(section.imageUrl, section.label, click);
+      inner = _imgWithOverlay(section.imageUrl, section.label, click, drop);
     } else {
-      inner = _imgPlaceholder(section.label || '이미지를 업로드하세요', click, 300);
+      inner = _imgPlaceholder(section.label || '이미지를 업로드하세요', click, 300, drop);
     }
     return `<div id="${id}" style="background:${bg};padding:${pad}px;">${inner}</div>`;
   }
@@ -398,12 +435,20 @@ function renderSectionHTML(section) {
     const pad = section.padding !== undefined ? section.padding : 0;
     const click1 = isEditor ? `onclick="event.stopPropagation();editorUploadGrid2('${id}',1)"` : '';
     const click2 = isEditor ? `onclick="event.stopPropagation();editorUploadGrid2('${id}',2)"` : '';
+    const drop1  = isEditor
+      ? `ondragover="event.stopPropagation();handleCanvasDragOver(event,this)"
+         ondragleave="handleCanvasDragLeave(event,this)"
+         ondrop="handleCanvasDrop(event,'${id}',1)"` : '';
+    const drop2  = isEditor
+      ? `ondragover="event.stopPropagation();handleCanvasDragOver(event,this)"
+         ondragleave="handleCanvasDragLeave(event,this)"
+         ondrop="handleCanvasDrop(event,'${id}',2)"` : '';
     const left  = section.imageUrl1
-      ? _imgWithOverlay(section.imageUrl1, section.label1, click1)
-      : _imgPlaceholder(section.label1 || '왼쪽 이미지', click1, 260);
+      ? _imgWithOverlay(section.imageUrl1, section.label1, click1, drop1)
+      : _imgPlaceholder(section.label1 || '왼쪽 이미지', click1, 260, drop1);
     const right = section.imageUrl2
-      ? _imgWithOverlay(section.imageUrl2, section.label2, click2)
-      : _imgPlaceholder(section.label2 || '오른쪽 이미지', click2, 260);
+      ? _imgWithOverlay(section.imageUrl2, section.label2, click2, drop2)
+      : _imgPlaceholder(section.label2 || '오른쪽 이미지', click2, 260, drop2);
     return `<div id="${id}" style="background:${bg};padding:${pad}px;">
       <div style="display:flex;gap:${gap}px;align-items:stretch;">
         <div style="flex:1;min-width:0;">${left}</div>

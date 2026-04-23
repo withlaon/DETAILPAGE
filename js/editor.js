@@ -332,28 +332,15 @@ function renderPromoProps(sec) {
     </div>
 
     <div class="prop-section">
-      <label class="prop-label">메인 홍보문구 (굵게)</label>
-      <textarea class="prop-input resize-none" rows="3" placeholder="홍보 문구를 입력하세요"
-        oninput="updateSectionAndRender('${sec.id}','mainText',this.value)">${sec.mainText||''}</textarea>
-    </div>
-
-    <div class="prop-section">
-      <label class="prop-label">서브 문구 (작게)</label>
-      <textarea class="prop-input resize-none" rows="3" placeholder="부제목이나 상세 설명"
+      <label class="prop-label">홍보 문구</label>
+      <textarea class="prop-input resize-none" rows="5" placeholder="홍보 문구를 입력하세요"
         oninput="updateSectionAndRender('${sec.id}','subText',this.value)">${sec.subText||''}</textarea>
     </div>
 
-    <div class="prop-section grid grid-cols-2 gap-3">
-      <div>
-        <label class="prop-label">메인 크기: <span id="mfsVal">${sec.mainFontSize||22}</span>px</label>
-        <input type="range" min="14" max="48" value="${sec.mainFontSize||22}"
-          oninput="document.getElementById('mfsVal').textContent=this.value; updateSectionAndRender('${sec.id}','mainFontSize',parseInt(this.value))">
-      </div>
-      <div>
-        <label class="prop-label">서브 크기: <span id="sfsVal">${sec.subFontSize||14}</span>px</label>
-        <input type="range" min="10" max="24" value="${sec.subFontSize||14}"
-          oninput="document.getElementById('sfsVal').textContent=this.value; updateSectionAndRender('${sec.id}','subFontSize',parseInt(this.value))">
-      </div>
+    <div class="prop-section">
+      <label class="prop-label">글자 크기: <span id="sfsVal">${sec.subFontSize||16}</span>px</label>
+      <input type="range" min="12" max="32" value="${sec.subFontSize||16}"
+        oninput="document.getElementById('sfsVal').textContent=this.value; updateSectionAndRender('${sec.id}','subFontSize',parseInt(this.value))">
     </div>
 
     <div class="prop-section">
@@ -366,21 +353,11 @@ function renderPromoProps(sec) {
     </div>
 
     <div class="prop-section">
-      <label class="prop-label">메인 글자 색상</label>
+      <label class="prop-label">글자 색상 (진한 회색 기본)</label>
       <div class="flex items-center gap-2">
-        <input type="color" value="${sec.textColor||'#1a1a1a'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
-          oninput="updateSectionAndRender('${sec.id}','textColor',this.value)">
-        <input type="text" class="prop-input" value="${sec.textColor||'#1a1a1a'}"
-          onchange="updateSectionAndRender('${sec.id}','textColor',this.value)">
-      </div>
-    </div>
-
-    <div class="prop-section">
-      <label class="prop-label">서브 글자 색상</label>
-      <div class="flex items-center gap-2">
-        <input type="color" value="${sec.subColor||'#888888'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+        <input type="color" value="${sec.subColor||'#444444'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
           oninput="updateSectionAndRender('${sec.id}','subColor',this.value)">
-        <input type="text" class="prop-input" value="${sec.subColor||'#888888'}"
+        <input type="text" class="prop-input" value="${sec.subColor||'#444444'}"
           onchange="updateSectionAndRender('${sec.id}','subColor',this.value)">
       </div>
     </div>
@@ -711,12 +688,12 @@ function addSection(type) {
   if (type === 'hero') {
     newSec = { id: generateId(), type: 'hero', imageUrl: '', bgColor: '#ffffff', padding: 16, radius: 10,
       subText: '일상에 특별함을 더하다', brandText: 'Withlaon',
-      textColor: '#ffffff', gradStop: 42, gradColor: 'rgba(0,0,0,0.72)', label: '대표 컷' };
+      textColor: '#ffffff', gradStop: 42, gradColor: 'rgba(109,40,217,0.55)', label: '대표 컷' };
   } else if (type === 'promo') {
     newSec = { id: generateId(), type: 'promo',
       mainText: '', subText: '',
-      mainFontSize: 22, subFontSize: 14, textColor: '#1a1a1a', subColor: '#888888',
-      lineColor: '#dddddd', textAlign: 'center', bgColor: '#ffffff', paddingV: 50, paddingH: 40 };
+      subFontSize: 16, subColor: '#444444',
+      lineColor: '#cccccc', textAlign: 'center', bgColor: '#ffffff', paddingV: 50, paddingH: 40 };
   } else if (type === 'image') {
     newSec = { id: generateId(), type: 'image', imageUrl: '', bgColor: '#ffffff', padding: 0, label: '새 이미지' };
   } else if (type === 'grid2') {
@@ -874,6 +851,39 @@ function editorUploadGrid2(sectionId, slot) {
   document.getElementById('imageFileInput').click();
 }
 
+// 캔버스 이미지 영역 드래그앤드롭 (slot=0: 단일 이미지, slot=1/2: grid2)
+async function handleCanvasDrop(event, sectionId, slot) {
+  event.preventDefault();
+  event.stopPropagation();
+  // 드래그 하이라이트 제거
+  event.currentTarget.style.outline = '';
+  event.currentTarget.style.opacity = '';
+  const file = Array.from(event.dataTransfer.files).find(f => f.type.startsWith('image/'));
+  if (!file) { showToast('이미지 파일을 드롭해 주세요.', 'error'); return; }
+  if (slot > 0) {
+    uploadGrid2SectionId = sectionId;
+    uploadGrid2Slot      = slot;
+    uploadTargetSectionId = null;
+    await processGrid2Upload(file);
+  } else {
+    uploadTargetSectionId = sectionId;
+    uploadGrid2SectionId  = null;
+    await handleImageUpload({ target: { files: [file], value: '' } });
+  }
+}
+
+function handleCanvasDragOver(event, el) {
+  event.preventDefault();
+  event.stopPropagation();
+  el.style.outline = '3px solid #7c3aed';
+  el.style.opacity = '0.85';
+}
+
+function handleCanvasDragLeave(event, el) {
+  el.style.outline = '';
+  el.style.opacity = '';
+}
+
 // ── grid2 이미지 업로드 ───────────────────────
 
 let uploadGrid2SectionId = null;
@@ -902,18 +912,25 @@ async function processGrid2Upload(file) {
   const maxSize = 10 * 1024 * 1024;
   if (file.size > maxSize) { showToast('파일 크기는 10MB 이하여야 합니다.', 'error'); return; }
   showToast('이미지 업로드 중...', 'info');
+  const sid  = uploadGrid2SectionId;
+  const slot = uploadGrid2Slot;
   try {
     let url;
     if (CONFIG.SUPABASE_ANON_KEY) {
-      url = await uploadImage(file, 'sections');
+      try {
+        url = await uploadImage(file, 'sections');
+      } catch (storageErr) {
+        console.warn('Storage 업로드 실패, base64 임시 저장:', storageErr.message);
+        url = await fileToBase64(file);
+        showToast('스토리지 미설정 → 임시 로컬 저장', 'warning');
+      }
     } else {
       url = await fileToBase64(file);
-      showToast('Supabase 미연결: 로컬 미리보기 모드', 'warning');
     }
-    const key = uploadGrid2Slot === 1 ? 'imageUrl1' : 'imageUrl2';
-    updateSectionAndRender(uploadGrid2SectionId, key, url);
+    const key = slot === 1 ? 'imageUrl1' : 'imageUrl2';
+    updateSectionAndRender(sid, key, url);
     renderPropPanel();
-    showToast('이미지 업로드 완료!', 'success');
+    showToast('이미지 적용 완료!', 'success');
   } catch (err) {
     showToast('업로드 실패: ' + err.message, 'error');
   }

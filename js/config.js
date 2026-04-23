@@ -36,15 +36,14 @@ const TEMPLATES = [
         imageUrl: '', bgColor: '#ffffff', padding: 16, radius: 10,
         subText: '일상에 특별함을 더하다',
         brandText: 'Withlaon',
-        textColor: '#ffffff', gradStop: 42, gradColor: 'rgba(0,0,0,0.72)',
+        textColor: '#ffffff', gradStop: 42, gradColor: 'rgba(109,40,217,0.55)',
         label: '대표 컷 (3:4 비율)' },
 
-      // ② 홍보문구 (기본값 비워두기 — 직접 입력)
+      // ② 홍보문구 — subText 단일 필드, 진한 회색
       { id: 's2', type: 'promo',
-        mainText: '',
-        subText: '',
-        mainFontSize: 22, subFontSize: 14,
-        textColor: '#1a1a1a', subColor: '#888888', lineColor: '#dddddd',
+        mainText: '', subText: '',
+        subFontSize: 16,
+        subColor: '#444444', lineColor: '#cccccc',
         textAlign: 'center', bgColor: '#ffffff', paddingV: 50, paddingH: 40 },
 
       // ③ 이미지 1장 — 여백
