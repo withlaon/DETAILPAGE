@@ -188,13 +188,6 @@ function renderCanvas() {
         <button class="sec-btn bg-white shadow text-slate-600 hover:bg-slate-50" onclick="event.stopPropagation();duplicateSection('${sec.id}')" title="복제">⧉</button>
         <button class="sec-btn bg-rose-50 shadow text-rose-500 hover:bg-rose-100" onclick="event.stopPropagation();deleteSection('${sec.id}')" title="삭제">✕</button>
       </div>
-      ${sec.type !== 'text' && sec.type !== 'spacer' ? `
-      <div style="position:absolute;bottom:6px;left:6px;z-index:15;pointer-events:none;">
-        <span style="background:rgba(0,0,0,0.55);color:#fff;font-size:10px;padding:2px 7px;
-          border-radius:4px;font-family:'Noto Sans KR',sans-serif;">
-          ${{grid2:'2단 그리드',grid3:'3단 그리드',coloroption:'컬러옵션',detailview:'디테일컷',hero:'히어로',modelfit:'모델핏',sizeinfo:'사이즈정보'}[sec.type] || (sec.label || sec.type)}
-        </span>
-      </div>` : ''}
     </div>`;
   }).join('') + `
   <div id="dc-fixed-footer" style="padding:18px 20px 5px;text-align:center;background:#f9f6ff;">
@@ -1567,12 +1560,16 @@ async function savePageDB(data) {
 async function downloadJpeg() {
   const canvas = document.getElementById('pageCanvas');
   const title = document.getElementById('pageTitle').value.trim() || '상세페이지';
-  // 선택 해제 후 다운로드
+  // 선택 해제 + 테두리 숨김
   const prevSelected = selectedSectionId;
   selectedSectionId = null;
   document.querySelectorAll('#pageCanvas .section-overlay').forEach(el => el.classList.remove('selected'));
+  canvas.classList.add('dc-exporting');
+  // DOM 업데이트 후 캡처
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
   await downloadAsJpeg(canvas, title);
   // 복원
+  canvas.classList.remove('dc-exporting');
   selectedSectionId = prevSelected;
   if (prevSelected) {
     document.querySelectorAll(`#pageCanvas [data-id="${prevSelected}"]`).forEach(el => el.classList.add('selected'));

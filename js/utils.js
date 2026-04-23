@@ -7,20 +7,36 @@
 async function downloadAsJpeg(canvasEl, filename = '상세페이지') {
   showToast('JPEG 파일 생성 중...', 'info');
 
-  // 양사이드 여백 임시 제거: .section-overlay 바로 아래 섹션 루트 div의 좌우 padding을 0으로
+  // 좌우·하단 여백 임시 제거 + 푸터 여백 조정
   const modified = [];
+
+  // 1) 각 섹션 루트 div: paddingLeft/Right/Bottom을 0으로
   canvasEl.querySelectorAll('.section-overlay > div[id]').forEach(el => {
     const cs = window.getComputedStyle(el);
-    const pl = parseFloat(cs.paddingLeft)  || 0;
-    const pr = parseFloat(cs.paddingRight) || 0;
-    if (pl > 0 || pr > 0) {
+    const pl = parseFloat(cs.paddingLeft)   || 0;
+    const pr = parseFloat(cs.paddingRight)  || 0;
+    const pb = parseFloat(cs.paddingBottom) || 0;
+    if (pl > 0 || pr > 0 || pb > 0) {
       const origStyle = el.getAttribute('style') || '';
-      el.style.paddingLeft  = '0px';
-      el.style.paddingRight = '0px';
+      el.style.paddingLeft   = '0px';
+      el.style.paddingRight  = '0px';
+      el.style.paddingBottom = '0px';
       modified.push({ el, origStyle });
     }
   });
 
+  // 2) 푸터: 상단 여백(hero paddingTop=16)과 동일하게 16px, 좌우·하단 0
+  const footer = canvasEl.querySelector('#dc-fixed-footer');
+  let origFooterStyle = '';
+  if (footer) {
+    origFooterStyle = footer.getAttribute('style') || '';
+    footer.style.paddingTop    = '16px';
+    footer.style.paddingBottom = '16px';
+    footer.style.paddingLeft   = '0px';
+    footer.style.paddingRight  = '0px';
+  }
+
+  await new Promise(r => requestAnimationFrame(r));
   const W = canvasEl.scrollWidth;
   const H = canvasEl.scrollHeight;
 
@@ -53,6 +69,7 @@ async function downloadAsJpeg(canvasEl, filename = '상세페이지') {
     modified.forEach(({ el, origStyle }) => {
       el.setAttribute('style', origStyle);
     });
+    if (footer) footer.setAttribute('style', origFooterStyle);
   }
 }
 
@@ -545,7 +562,7 @@ function renderSectionHTML(section) {
           </div>`;
       return `<div style="width:${itemW};flex:0 0 ${itemW};text-align:center;">
         ${imgEl}
-        <p style="font-size:12px;color:#666;margin:8px 0 0;padding:0 2px;
+        <p style="font-size:14px;font-weight:700;color:#555;margin:8px 0 0;padding:0 2px;
           font-family:'Noto Sans KR',sans-serif;line-height:1.4;">
           ${name || (isEditor ? '<span style="color:#ccc;">옵션명</span>' : '')}
         </p>
