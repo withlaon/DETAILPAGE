@@ -251,9 +251,12 @@ function renderHeroProps(sec) {
     </div>
 
     <div class="prop-section">
-      <label class="prop-label">하단 텍스트 — 브랜드 (이탤릭)</label>
-      <input type="text" class="prop-input" placeholder="Brand Name" value="${sec.brandText||''}"
+      <label class="prop-label">브랜드명 — 필기체(Great Vibes) 고정</label>
+      <input type="text" class="prop-input" placeholder="Withlaon" value="${sec.brandText!==undefined?sec.brandText:'Withlaon'}"
         oninput="updateSectionAndRender('${sec.id}','brandText',this.value)">
+      <p class="text-xs text-slate-400 mt-1" style="font-family:'Great Vibes',cursive;font-size:16px;color:#555;padding:4px 0;">
+        미리보기: ${sec.brandText||'Withlaon'}
+      </p>
     </div>
 
     <div class="prop-section">
@@ -707,11 +710,11 @@ function addSection(type) {
   let newSec;
   if (type === 'hero') {
     newSec = { id: generateId(), type: 'hero', imageUrl: '', bgColor: '#ffffff', padding: 16, radius: 10,
-      subText: '일상에 특별함을 더하다', brandText: 'Brand Name',
-      textColor: '#333333', gradStop: 42, gradColor: '#ffffff', label: '대표 컷' };
+      subText: '일상에 특별함을 더하다', brandText: 'Withlaon',
+      textColor: '#ffffff', gradStop: 42, gradColor: 'rgba(0,0,0,0.72)', label: '대표 컷' };
   } else if (type === 'promo') {
     newSec = { id: generateId(), type: 'promo',
-      mainText: '홍보 문구를 입력하세요', subText: '부제목을 입력하세요.',
+      mainText: '', subText: '',
       mainFontSize: 22, subFontSize: 14, textColor: '#1a1a1a', subColor: '#888888',
       lineColor: '#dddddd', textAlign: 'center', bgColor: '#ffffff', paddingV: 50, paddingH: 40 };
   } else if (type === 'image') {
@@ -819,19 +822,27 @@ async function handleImageUpload(e) {
   }
 
   showToast('이미지 업로드 중...', 'info');
+  const targetId = uploadTargetSectionId; // 비동기 중 변경 방지
+  uploadTargetSectionId = null;           // 재사용 방지
   try {
     let url;
     if (CONFIG.SUPABASE_ANON_KEY) {
-      url = await uploadImage(file, 'sections');
+      try {
+        url = await uploadImage(file, 'sections');
+      } catch (storageErr) {
+        // Storage 버킷 미설정 등 실패 시 base64 폴백
+        console.warn('Storage 업로드 실패, base64 임시 저장:', storageErr.message);
+        url = await fileToBase64(file);
+        showToast('스토리지 미설정 → 임시 로컬 저장 (저장 시 Supabase에 반영되지 않을 수 있습니다)', 'warning');
+      }
     } else {
-      // Supabase 없을 때 Base64로 임시 처리
       url = await fileToBase64(file);
-      showToast('Supabase 미연결: 로컬 미리보기 모드', 'warning');
     }
-    updateSectionAndRender(uploadTargetSectionId, 'imageUrl', url);
+    updateSectionAndRender(targetId, 'imageUrl', url);
     renderPropPanel();
-    showToast('이미지 업로드 완료!', 'success');
+    showToast('이미지 적용 완료!', 'success');
   } catch (err) {
+    uploadTargetSectionId = targetId; // 실패 시 복원
     showToast('업로드 실패: ' + err.message, 'error');
   }
 }

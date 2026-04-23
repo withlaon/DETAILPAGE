@@ -31,18 +31,18 @@ const TEMPLATES = [
     thumbnail: null,
     category: '범용',
     sections: [
-      // ① 대표컷 — 3:4 비율 + 하단 그라데이션 텍스트
+      // ① 대표컷 — 3:4 비율 + 하단 다크 그라데이션 + 흰색 텍스트
       { id: 's1', type: 'hero',
         imageUrl: '', bgColor: '#ffffff', padding: 16, radius: 10,
         subText: '일상에 특별함을 더하다',
-        brandText: 'Brand Name',
-        textColor: '#333333', gradStop: 42, gradColor: '#ffffff',
+        brandText: 'Withlaon',
+        textColor: '#ffffff', gradStop: 42, gradColor: 'rgba(0,0,0,0.72)',
         label: '대표 컷 (3:4 비율)' },
 
-      // ② 홍보문구
+      // ② 홍보문구 (기본값 비워두기 — 직접 입력)
       { id: 's2', type: 'promo',
-        mainText: '홍보 문구를 입력하세요',
-        subText: '상품의 특징과 매력을 담은 부제목을 입력하세요.\n간결하고 인상적인 문장을 작성해보세요.',
+        mainText: '',
+        subText: '',
         mainFontSize: 22, subFontSize: 14,
         textColor: '#1a1a1a', subColor: '#888888', lineColor: '#dddddd',
         textAlign: 'center', bgColor: '#ffffff', paddingV: 50, paddingH: 40 },

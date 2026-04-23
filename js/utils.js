@@ -253,70 +253,77 @@ function renderSectionHTML(section) {
 
   // ── 히어로 (3:4 비율 + 하단 그라데이션 텍스트) ──
   if (section.type === 'hero') {
-    const bg         = section.bgColor || '#ffffff';
-    const pad        = section.padding !== undefined ? section.padding : 16;
-    const radius     = section.radius  !== undefined ? section.radius  : 10;
-    const subText    = section.subText  || '';
-    const brandText  = section.brandText || '';
-    const textColor  = section.textColor || '#333333';
-    const gradStop   = section.gradStop  !== undefined ? section.gradStop : 45; // %
-    const gradColor  = section.gradColor || '#ffffff';
-    const click = isEditor ? `onclick="event.stopPropagation();editorUploadImage('${id}')"` : '';
+    const bg        = section.bgColor  || '#ffffff';
+    const pad       = section.padding  !== undefined ? section.padding : 16;
+    const radius    = section.radius   !== undefined ? section.radius  : 10;
+    const subText   = section.subText  || '';
+    const brandText = section.brandText !== undefined ? section.brandText : 'Withlaon';
+    const textColor = section.textColor || '#ffffff';
+    const gradStop  = section.gradStop  !== undefined ? section.gradStop : 42;
+    const gradColor = section.gradColor || 'rgba(0,0,0,0.72)';
+    // 에디터 전용 업로드 핸들러 (triggerImageUpload는 editor.js에 정의됨)
+    const uploadFn = `triggerImageUpload('${id}')`;
 
     // 이미지 or 플레이스홀더
     let imgEl = '';
     if (section.imageUrl) {
       imgEl = `<img src="${section.imageUrl}"
-        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;"
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:1;"
         alt="${section.label||''}">`;
     } else {
-      imgEl = `<div ${click} style="position:absolute;inset:0;background:#f0f0f0;
-        display:flex;flex-direction:column;align-items:center;justify-content:center;
-        color:#c0c0c0;z-index:1;${isEditor?'cursor:pointer;':''}
-        border:2px dashed #e0e0e0;"
-        ${isEditor?`onmouseenter="this.style.background='#eef2ff';this.style.borderColor='#818cf8'"
-        onmouseleave="this.style.background='#f0f0f0';this.style.borderColor='#e0e0e0'"`:''}>
-        <div style="width:52px;height:52px;border-radius:50%;background:#e8e8e8;
-          display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
-          <svg width="26" height="26" fill="none" stroke="#aaa" viewBox="0 0 24 24">
+      const clickAttr = isEditor ? `onclick="event.stopPropagation();${uploadFn}"` : '';
+      imgEl = `<div ${clickAttr}
+        style="position:absolute;inset:0;z-index:1;background:#f0f0f0;
+          display:flex;flex-direction:column;align-items:center;justify-content:center;
+          color:#bbb;border:2px dashed #ddd;${isEditor?'cursor:pointer;':''}"
+        ${isEditor ? `onmouseenter="this.style.background='#eef2ff';this.style.borderColor='#818cf8'"
+          onmouseleave="this.style.background='#f0f0f0';this.style.borderColor='#ddd'"` : ''}>
+        <div style="width:56px;height:56px;border-radius:50%;background:#e4e4e4;
+          display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+          <svg width="28" height="28" fill="none" stroke="#bbb" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
               d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86
-              a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5
-              a2 2 0 01-2-2V9z"/>
+              a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2
+              H5a2 2 0 01-2-2V9z"/>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
               d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
           </svg>
         </div>
-        <span style="font-size:14px;font-weight:600;color:#aaa;">대표 이미지 (3:4 비율)</span>
-        ${isEditor?'<span style="font-size:11px;color:#c0c0c0;margin-top:5px;">클릭하여 이미지 선택</span>':''}
+        <span style="font-size:14px;font-weight:600;color:#bbb;">대표 이미지 업로드</span>
+        <span style="font-size:12px;color:#ccc;margin-top:4px;">3:4 비율 권장</span>
+        ${isEditor ? '<span style="font-size:11px;color:#aaa;margin-top:6px;background:#e8e8e8;padding:4px 12px;border-radius:20px;">클릭하여 파일 선택</span>' : ''}
       </div>`;
     }
 
-    // 그라데이션 텍스트 오버레이
+    // 하단 그라데이션 + 텍스트 오버레이 (z-index:3, pointer-events:none)
     const hasText = subText || brandText;
     const textOverlay = hasText ? `
-      <div style="position:absolute;bottom:0;left:0;right:0;z-index:2;pointer-events:none;
-        background:linear-gradient(to bottom, transparent 0%, ${gradColor} ${gradStop}%);
-        padding:70px 24px 28px;text-align:center;">
-        ${subText ? `<p style="font-size:15px;color:${textColor};margin:0 0 8px;
-          font-weight:500;letter-spacing:0.04em;
+      <div style="position:absolute;bottom:0;left:0;right:0;z-index:3;pointer-events:none;
+        background:linear-gradient(to bottom, transparent 0%, ${gradColor} ${gradStop}%, ${gradColor} 100%);
+        padding:80px 28px 30px;text-align:center;">
+        ${subText ? `<p style="font-size:18px;color:${textColor};margin:0 0 10px;
+          font-weight:700;letter-spacing:0.05em;text-shadow:0 1px 4px rgba(0,0,0,0.3);
           font-family:'Noto Sans KR',sans-serif;">${subText}</p>` : ''}
-        ${brandText ? `<p style="font-size:24px;color:${textColor};margin:0;
-          font-style:italic;font-family:Georgia,'Times New Roman',serif;">${brandText}</p>` : ''}
+        ${brandText ? `<p style="font-size:30px;color:${textColor};margin:0;
+          font-family:'Great Vibes','Dancing Script',cursive;
+          text-shadow:0 1px 6px rgba(0,0,0,0.25);letter-spacing:0.02em;">${brandText}</p>` : ''}
       </div>` : '';
 
-    // 에디터 변경 버튼 (이미지 있을 때 우상단 뱃지)
+    // 에디터 변경 버튼 (이미지 있을 때만, z-index:5)
     const changeBtn = (isEditor && section.imageUrl) ? `
-      <button onclick="event.stopPropagation();editorUploadImage('${id}')"
-        style="position:absolute;top:10px;right:10px;z-index:10;
+      <button onclick="event.stopPropagation();${uploadFn}"
+        style="position:absolute;top:10px;right:10px;z-index:5;
           background:rgba(0,0,0,0.55);color:#fff;border:none;
-          padding:6px 13px;border-radius:7px;font-size:12px;cursor:pointer;
-          font-family:'Noto Sans KR',sans-serif;display:flex;align-items:center;gap:5px;">
+          padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;
+          font-family:'Noto Sans KR',sans-serif;display:flex;align-items:center;gap:5px;
+          transition:background 0.2s;"
+        onmouseenter="this.style.background='rgba(79,70,229,0.85)'"
+        onmouseleave="this.style.background='rgba(0,0,0,0.55)'">
         <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07
-            4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9
-            a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86
+            a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2
+            H5a2 2 0 01-2-2V9z"/>
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
         </svg>
@@ -334,23 +341,37 @@ function renderSectionHTML(section) {
 
   // ── 홍보문구 (Promo) ──────────────────────────
   if (section.type === 'promo') {
-    const bg         = section.bgColor   || '#ffffff';
-    const pv         = section.paddingV  !== undefined ? section.paddingV  : 50;
-    const ph         = section.paddingH  !== undefined ? section.paddingH  : 40;
-    const mainText   = (section.mainText  || '').replace(/\n/g, '<br>');
-    const subText    = (section.subText   || '').replace(/\n/g, '<br>');
-    const mainSize   = section.mainFontSize !== undefined ? section.mainFontSize : 22;
-    const subSize    = section.subFontSize  !== undefined ? section.subFontSize  : 14;
-    const textColor  = section.textColor  || '#1a1a1a';
-    const subColor   = section.subColor   || '#888888';
-    const lineColor  = section.lineColor  || '#dddddd';
-    const align      = section.textAlign  || 'center';
+    const bg        = section.bgColor   || '#ffffff';
+    const pv        = section.paddingV  !== undefined ? section.paddingV  : 50;
+    const ph        = section.paddingH  !== undefined ? section.paddingH  : 40;
+    const rawMain   = section.mainText  || '';
+    const rawSub    = section.subText   || '';
+    const mainText  = rawMain.replace(/\n/g, '<br>');
+    const subText   = rawSub.replace(/\n/g, '<br>');
+    const mainSize  = section.mainFontSize !== undefined ? section.mainFontSize : 22;
+    const subSize   = section.subFontSize  !== undefined ? section.subFontSize  : 14;
+    const textColor = section.textColor  || '#1a1a1a';
+    const subColor  = section.subColor   || '#888888';
+    const lineColor = section.lineColor  || '#dddddd';
+    const align     = section.textAlign  || 'center';
+    const isEmpty   = !rawMain && !rawSub;
+
+    // 에디터에서 비어있을 때: 클릭 유도 영역 표시
+    if (isEmpty && isEditor) {
+      return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;text-align:center;
+        border:2px dashed #f0d0a0;cursor:pointer;"
+        onclick="event.stopPropagation();selectSection('${id}');document.querySelector('#propPanel textarea')?.focus()">
+        <p style="font-size:14px;color:#ccc;margin:0;font-family:'Noto Sans KR',sans-serif;">
+          📝 오른쪽 패널에서 홍보 문구를 입력하세요
+        </p>
+      </div>`;
+    }
+
     return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;text-align:${align};">
       ${mainText ? `<p style="font-size:${mainSize}px;font-weight:bold;color:${textColor};
         margin:0 0 16px;line-height:1.6;font-family:'Noto Sans KR',sans-serif;">${mainText}</p>` : ''}
-      <div style="width:28px;height:2px;background:${lineColor};
-        margin:0 ${align==='center'?'auto':align==='right'?'0 0 0 auto':'0'} 16px;
-        ${align==='left'?'':'display:inline-block;vertical-align:top;'}"></div>
+      ${(mainText || subText) ? `<div style="width:28px;height:2px;background:${lineColor};
+        margin:0 ${align==='center'?'auto':align==='right'?'0 0 0 auto':'0'} 16px;"></div>` : ''}
       ${subText ? `<p style="font-size:${subSize}px;color:${subColor};margin:0;
         line-height:1.9;font-family:'Noto Sans KR',sans-serif;">${subText}</p>` : ''}
     </div>`;
