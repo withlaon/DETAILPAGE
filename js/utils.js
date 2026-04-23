@@ -199,26 +199,46 @@ function generateAITemplate(category, style = 'standard') {
 
 // ── 섹션 렌더링 (공통) ─────────────────────────
 
+function _imgPlaceholder(label) {
+  return `<div style="background:#f0f0f0;min-height:180px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;color:#bbb;border:2px dashed #ddd;width:100%;">
+    <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-bottom:6px;opacity:0.5;">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+    </svg>
+    <span style="font-size:12px;">${label || '이미지 업로드'}</span>
+  </div>`;
+}
+
 function renderSectionHTML(section) {
   const id = section.id;
+
+  // ── 단일 이미지 ──────────────────────────────
   if (section.type === 'image') {
     const bg = section.bgColor || '#ffffff';
     const pad = section.padding || 0;
-    if (section.imageUrl) {
-      return `<div id="${id}" style="background:${bg};padding:${pad}px;">
-        <img src="${section.imageUrl}" style="width:100%;display:block;" alt="${section.label||''}">
-      </div>`;
-    } else {
-      return `<div id="${id}" style="background:${bg};padding:${pad}px;">
-        <div style="background:#f0f0f0;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#aaa;border:2px dashed #ddd;">
-          <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-bottom:8px;opacity:0.5;">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-          </svg>
-          <span style="font-size:13px;">${section.label || '이미지를 업로드하세요'}</span>
-        </div>
-      </div>`;
-    }
+    const inner = section.imageUrl
+      ? `<img src="${section.imageUrl}" style="width:100%;display:block;" alt="${section.label||''}">`
+      : _imgPlaceholder(section.label || '이미지를 업로드하세요');
+    return `<div id="${id}" style="background:${bg};padding:${pad}px;">${inner}</div>`;
   }
+
+  // ── 2단 그리드 이미지 ──────────────────────────
+  if (section.type === 'grid2') {
+    const bg = section.bgColor || '#ffffff';
+    const gap = section.gap !== undefined ? section.gap : 2;
+    const left = section.imageUrl1
+      ? `<img src="${section.imageUrl1}" style="width:100%;display:block;height:100%;object-fit:cover;" alt="${section.label1||''}">`
+      : _imgPlaceholder(section.label1 || '왼쪽 이미지');
+    const right = section.imageUrl2
+      ? `<img src="${section.imageUrl2}" style="width:100%;display:block;height:100%;object-fit:cover;" alt="${section.label2||''}">`
+      : _imgPlaceholder(section.label2 || '오른쪽 이미지');
+    return `<div id="${id}" style="background:${bg};display:flex;gap:${gap}px;">
+      <div style="flex:1;min-width:0;">${left}</div>
+      <div style="flex:1;min-width:0;">${right}</div>
+    </div>`;
+  }
+
+  // ── 텍스트 ───────────────────────────────────
   if (section.type === 'text') {
     const bg = section.bgColor || '#ffffff';
     const pv = section.paddingV || 20;
@@ -232,10 +252,13 @@ function renderSectionHTML(section) {
       <p style="font-size:${size}px;font-weight:${weight};color:${color};text-align:${align};margin:0;line-height:1.8;white-space:pre-wrap;font-family:'Noto Sans KR',sans-serif;">${textContent}</p>
     </div>`;
   }
+
+  // ── 여백 ─────────────────────────────────────
   if (section.type === 'spacer') {
     const bg = section.bgColor || '#f5f5f5';
     const h = section.height || 20;
     return `<div id="${id}" style="background:${bg};height:${h}px;"></div>`;
   }
+
   return '';
 }

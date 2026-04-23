@@ -114,15 +114,16 @@ function renderSectionList() {
   const list = document.getElementById('sectionList');
   const typeIcons = {
     image: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`,
+    grid2: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h4a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v12a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z"/></svg>`,
     text: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h10"/></svg>`,
     spacer: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>`,
   };
-  const typeColors = { image: 'text-indigo-500', text: 'text-emerald-500', spacer: 'text-amber-500' };
-  const typeLabels = { image: '이미지', text: '텍스트', spacer: '여백' };
+  const typeColors = { image: 'text-indigo-500', grid2: 'text-purple-500', text: 'text-emerald-500', spacer: 'text-amber-500' };
+  const typeLabels = { image: '이미지', grid2: '2단 그리드', text: '텍스트', spacer: '여백' };
 
   list.innerHTML = pageData.sections.map((sec, idx) => {
     const isActive = sec.id === selectedSectionId;
-    const label = sec.label || sec.text?.substring(0, 12) || typeLabels[sec.type];
+    const label = sec.label || sec.label1 || sec.text?.substring(0, 12) || typeLabels[sec.type];
     return `
     <div class="section-item ${isActive ? 'active' : ''}" data-id="${sec.id}" onclick="selectSection('${sec.id}')">
       <span class="drag-handle mr-1.5 cursor-grab" title="드래그하여 순서 변경">
@@ -196,8 +197,83 @@ function renderPropPanel() {
   panel.classList.remove('hidden');
 
   if (sec.type === 'image') renderImageProps(sec);
+  else if (sec.type === 'grid2') renderGrid2Props(sec);
   else if (sec.type === 'text') renderTextProps(sec);
   else if (sec.type === 'spacer') renderSpacerProps(sec);
+}
+
+function renderGrid2Props(sec) {
+  const panel = document.getElementById('propPanel');
+  panel.innerHTML = `
+    <div class="px-4 py-3 bg-purple-50 border-b border-purple-100">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 bg-purple-500 rounded flex items-center justify-center">
+          <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h4a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v12a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z"/></svg>
+        </div>
+        <span class="text-sm font-bold text-purple-800">2단 그리드 섹션</span>
+      </div>
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">왼쪽 이미지 이름</label>
+      <input type="text" class="prop-input" value="${sec.label1 || ''}"
+        onchange="updateSection('${sec.id}', 'label1', this.value)">
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">왼쪽 이미지 업로드</label>
+      ${sec.imageUrl1 ? `<img src="${sec.imageUrl1}" class="w-full rounded-lg mb-2 object-cover max-h-24">` : ''}
+      <div class="upload-zone" onclick="triggerGrid2Upload('${sec.id}', 1)"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="handleGrid2Drop(event,'${sec.id}',1)">
+        <p class="text-xs text-indigo-600 font-medium">클릭하여 왼쪽 이미지 업로드</p>
+      </div>
+      <input type="text" class="prop-input mt-2" placeholder="또는 URL 직접 입력" value="${sec.imageUrl1||''}"
+        onchange="updateSectionAndRender('${sec.id}','imageUrl1',this.value)">
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">오른쪽 이미지 이름</label>
+      <input type="text" class="prop-input" value="${sec.label2 || ''}"
+        onchange="updateSection('${sec.id}', 'label2', this.value)">
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">오른쪽 이미지 업로드</label>
+      ${sec.imageUrl2 ? `<img src="${sec.imageUrl2}" class="w-full rounded-lg mb-2 object-cover max-h-24">` : ''}
+      <div class="upload-zone" onclick="triggerGrid2Upload('${sec.id}', 2)"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="handleGrid2Drop(event,'${sec.id}',2)">
+        <p class="text-xs text-indigo-600 font-medium">클릭하여 오른쪽 이미지 업로드</p>
+      </div>
+      <input type="text" class="prop-input mt-2" placeholder="또는 URL 직접 입력" value="${sec.imageUrl2||''}"
+        onchange="updateSectionAndRender('${sec.id}','imageUrl2',this.value)">
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">이미지 간격: <span id="gapVal">${sec.gap !== undefined ? sec.gap : 2}</span>px</label>
+      <input type="range" min="0" max="20" value="${sec.gap !== undefined ? sec.gap : 2}"
+        oninput="document.getElementById('gapVal').textContent=this.value; updateSectionAndRender('${sec.id}','gap',parseInt(this.value))">
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">배경 색상</label>
+      <div class="flex items-center gap-2">
+        <input type="color" value="${sec.bgColor || '#ffffff'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+          oninput="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+        <input type="text" class="prop-input" value="${sec.bgColor || '#ffffff'}"
+          onchange="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+      </div>
+    </div>
+
+    <div class="prop-section flex justify-between gap-2">
+      <button onclick="moveSectionUp('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↑ 위로</button>
+      <button onclick="moveSectionDown('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↓ 아래로</button>
+      <button onclick="duplicateSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-indigo-600 hover:bg-indigo-50 border border-indigo-200 rounded-lg">복제</button>
+      <button onclick="deleteSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg">삭제</button>
+    </div>`;
 }
 
 function renderImageProps(sec) {
@@ -424,6 +500,8 @@ function addSection(type) {
   let newSec;
   if (type === 'image') {
     newSec = { id: generateId(), type: 'image', imageUrl: '', bgColor: '#ffffff', padding: 0, label: '새 이미지' };
+  } else if (type === 'grid2') {
+    newSec = { id: generateId(), type: 'grid2', imageUrl1: '', imageUrl2: '', bgColor: '#ffffff', gap: 2, label1: '왼쪽 이미지', label2: '오른쪽 이미지' };
   } else if (type === 'text') {
     newSec = { id: generateId(), type: 'text', text: '텍스트를 입력하세요', fontSize: 16, fontWeight: 'normal', color: '#333333', textAlign: 'center', bgColor: '#ffffff', paddingV: 20, paddingH: 20 };
   } else if (type === 'spacer') {
@@ -506,8 +584,17 @@ function triggerImageUpload(sectionId) {
 
 async function handleImageUpload(e) {
   const file = e.target.files[0];
-  if (!file || !uploadTargetSectionId) return;
   e.target.value = '';
+  if (!file) return;
+
+  // grid2 업로드 분기
+  if (uploadGrid2SectionId && !uploadTargetSectionId) {
+    await processGrid2Upload(file);
+    uploadGrid2SectionId = null;
+    return;
+  }
+
+  if (!uploadTargetSectionId) return;
 
   const maxSize = 10 * 1024 * 1024; // 10MB
   if (file.size > maxSize) {
@@ -541,6 +628,51 @@ function handleDrop(event, sectionId) {
   uploadTargetSectionId = sectionId;
   const fakeEvent = { target: { files: [file], value: '' } };
   handleImageUpload(fakeEvent);
+}
+
+// ── grid2 이미지 업로드 ───────────────────────
+
+let uploadGrid2SectionId = null;
+let uploadGrid2Slot = 1;
+
+function triggerGrid2Upload(sectionId, slot) {
+  uploadGrid2SectionId = sectionId;
+  uploadGrid2Slot = slot;
+  uploadTargetSectionId = null; // 단일 이미지 업로드와 구분
+  document.getElementById('imageFileInput').click();
+}
+
+function handleGrid2Drop(event, sectionId, slot) {
+  event.preventDefault();
+  event.currentTarget.classList.remove('dragover');
+  const file = event.dataTransfer.files[0];
+  if (!file || !file.type.startsWith('image/')) return;
+  uploadGrid2SectionId = sectionId;
+  uploadGrid2Slot = slot;
+  uploadTargetSectionId = null;
+  processGrid2Upload(file);
+}
+
+async function processGrid2Upload(file) {
+  if (!file) return;
+  const maxSize = 10 * 1024 * 1024;
+  if (file.size > maxSize) { showToast('파일 크기는 10MB 이하여야 합니다.', 'error'); return; }
+  showToast('이미지 업로드 중...', 'info');
+  try {
+    let url;
+    if (CONFIG.SUPABASE_ANON_KEY) {
+      url = await uploadImage(file, 'sections');
+    } else {
+      url = await fileToBase64(file);
+      showToast('Supabase 미연결: 로컬 미리보기 모드', 'warning');
+    }
+    const key = uploadGrid2Slot === 1 ? 'imageUrl1' : 'imageUrl2';
+    updateSectionAndRender(uploadGrid2SectionId, key, url);
+    renderPropPanel();
+    showToast('이미지 업로드 완료!', 'success');
+  } catch (err) {
+    showToast('업로드 실패: ' + err.message, 'error');
+  }
 }
 
 function fileToBase64(file) {
