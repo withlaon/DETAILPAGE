@@ -731,6 +731,115 @@ function renderSectionHTML(section) {
       </div>`;
     }
 
+    // ── 양산 전용 variant (그룹별 치수 + 다이어그램) ──
+    if (section.variant === 'parasol') {
+      const bg2   = section.bgColor || '#faf8ff';
+      const pad2  = section.padding !== undefined ? section.padding : 32;
+      const imgUrl2 = section.imageUrl || './assets/parasol-diagram.png';
+      const clickA2 = isEditor ? `onclick="event.stopPropagation();triggerImageUpload('${id}')"` : '';
+      const dropA2  = isEditor
+        ? `ondragover="event.stopPropagation();handleCanvasDragOver(event,this)"
+           ondragleave="handleCanvasDragLeave(event,this)"
+           ondrop="handleCanvasDrop(event,'${id}',0)"` : '';
+
+      const diagImg = `<div ${clickA2} ${dropA2} style="${isEditor?'cursor:pointer;':''}width:100%;height:100%;
+        display:flex;align-items:center;justify-content:center;">
+        <img src="${imgUrl2}" style="max-width:100%;max-height:320px;object-fit:contain;display:block;"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div style="display:none;flex-direction:column;align-items:center;justify-content:center;
+          gap:8px;width:100%;min-height:180px;color:#c0b4f0;">
+          <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86
+              a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2
+              H5a2 2 0 01-2-2V9z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span style="font-size:12px;">이미지 업로드</span>
+        </div>
+      </div>`;
+
+      // 측정 그룹 렌더링
+      const mkGroup = (gKey) => {
+        const gTitle = section[`${gKey}title`] || '';
+        const gCount = section[`${gKey}count`] || 0;
+        let rows = '';
+        for (let i = 1; i <= gCount; i++) {
+          const lbl  = section[`${gKey}r${i}label`] || '';
+          const val  = section[`${gKey}r${i}val`]   || '-';
+          const unit = section[`${gKey}r${i}unit`]  || 'CM';
+          rows += `<div style="display:flex;justify-content:space-between;align-items:center;
+              padding:9px 0;border-bottom:1px solid #f3f0fa;">
+              <span style="font-size:13px;color:#888;font-family:'Noto Sans KR',sans-serif;">${lbl}</span>
+              <span style="font-size:14px;font-family:'Noto Sans KR',sans-serif;">
+                <strong style="font-size:19px;font-weight:700;color:#1a1a1a;">${val}</strong>
+                <small style="font-size:11px;font-weight:600;color:#aaa;margin-left:2px;">${unit}</small>
+              </span>
+            </div>`;
+        }
+        return gTitle ? `
+          <div style="margin-bottom:6px;">
+            <p style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;
+              color:#7c3aed;margin:0 0 10px;font-family:'Noto Sans KR',sans-serif;letter-spacing:0.03em;">
+              <span style="display:inline-block;width:7px;height:7px;background:#c4b5fd;border-radius:50%;flex-shrink:0;"></span>
+              ${gTitle}
+            </p>
+            ${rows}
+          </div>` : '';
+      };
+
+      const g1html = mkGroup('g1');
+      const g2html = mkGroup('g2');
+      const g3html = mkGroup('g3');
+
+      const matSvg = `<svg width="13" height="13" fill="none" stroke="#7c3aed" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m12-9l2 9M9 21h6"/>
+      </svg>`;
+      const wgtSvg = `<svg width="13" height="13" fill="none" stroke="#7c3aed" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+          d="M3 6l3 1m0 0l-3 9a5 5 0 006.027 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5 5 0 006.027 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+      </svg>`;
+
+      return `<div id="${id}" style="background:${bg2};padding:${pad2}px;">
+        <p style="font-size:26px;font-weight:800;color:#1a1a1a;text-align:center;margin:0 0 22px;
+          font-family:'Noto Sans KR',sans-serif;">Size Information</p>
+        <div style="display:flex;gap:16px;align-items:stretch;">
+          <div style="flex:0 0 43%;background:#fff;border-radius:16px;padding:20px;
+            display:flex;align-items:center;justify-content:center;min-height:320px;">
+            ${diagImg}
+          </div>
+          <div style="flex:1;background:#fff;border-radius:16px;padding:22px 20px;">
+            ${g1html}
+            ${g2html ? `<div style="height:1px;background:#f0f0f0;margin:8px 0 16px;"></div>${g2html}` : ''}
+            ${g3html ? `<div style="height:1px;background:#f0f0f0;margin:8px 0 16px;"></div>${g3html}` : ''}
+            <div style="height:1px;background:#f0f0f0;margin:10px 0 14px;"></div>
+            <div style="display:flex;gap:0;">
+              <div style="flex:1;">
+                <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
+                  ${matSvg}
+                  <span style="font-size:11px;font-weight:700;color:#7c3aed;letter-spacing:0.1em;
+                    font-family:'Noto Sans KR',sans-serif;text-transform:uppercase;">Material</span>
+                </div>
+                <p style="font-size:15px;font-weight:700;color:#1a1a1a;margin:0;
+                  font-family:'Noto Sans KR',sans-serif;">${material}</p>
+              </div>
+              <div style="width:1px;background:#e5e7eb;margin:0 16px;"></div>
+              <div style="flex:1;">
+                <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
+                  ${wgtSvg}
+                  <span style="font-size:11px;font-weight:700;color:#7c3aed;letter-spacing:0.1em;
+                    font-family:'Noto Sans KR',sans-serif;text-transform:uppercase;">Weight</span>
+                </div>
+                <p style="font-size:15px;font-weight:700;color:#1a1a1a;margin:0;
+                  font-family:'Noto Sans KR',sans-serif;">${weight}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+
     // ── 카드 variant (가방 등 이미지+치수표) ──────────
     const imgUrl = section.imageUrl || '';
     const mRows = [

@@ -190,7 +190,8 @@ function renderCanvas() {
       </div>
     </div>`;
   }).join('') + `
-  <div id="dc-fixed-footer" style="padding:18px 20px 5px;text-align:center;background:#f9f6ff;">
+  <div id="dc-fixed-footer" style="display:flex;align-items:center;justify-content:center;
+    min-height:52px;padding:0 20px;background:#f9f6ff;">
     <p style="font-size:11px;color:#6d28d9;font-family:'Noto Sans KR',sans-serif;
       margin:0;letter-spacing:0.28em;font-weight:800;text-transform:uppercase;">&#169; WITHLAON STUDIO</p>
   </div>`;
@@ -873,6 +874,87 @@ function renderModelFitProps(sec) {
 // ── 속성 패널: 사이즈 정보 ─────────────────────
 function renderSizeInfoProps(sec) {
   const panel = document.getElementById('propPanel');
+
+  // ── 양산 parasol variant ──────────────────────────
+  if (sec.variant === 'parasol') {
+    const mkGroupInputs = (gKey, gLabel) => {
+      const gCount = sec[`${gKey}count`] || 0;
+      let rows = '';
+      for (let i = 1; i <= gCount; i++) {
+        rows += `
+          <div class="flex gap-1 mb-1">
+            <input type="text" class="prop-input" style="flex:2;" placeholder="항목명"
+              value="${sec[`${gKey}r${i}label`]||''}"
+              oninput="updateSectionAndRender('${sec.id}','${gKey}r${i}label',this.value)">
+            <input type="text" class="prop-input" style="flex:1;" placeholder="값"
+              value="${sec[`${gKey}r${i}val`]||''}"
+              oninput="updateSectionAndRender('${sec.id}','${gKey}r${i}val',this.value)">
+            <input type="text" class="prop-input" style="flex:1;" placeholder="단위"
+              value="${sec[`${gKey}r${i}unit`]||'CM'}"
+              oninput="updateSectionAndRender('${sec.id}','${gKey}r${i}unit',this.value)">
+          </div>`;
+      }
+      return `
+        <div class="prop-section border border-slate-100 rounded-lg p-2">
+          <label class="prop-label">${gLabel} — 그룹 제목</label>
+          <input type="text" class="prop-input mb-2" value="${sec[`${gKey}title`]||''}"
+            oninput="updateSectionAndRender('${sec.id}','${gKey}title',this.value)">
+          <label class="prop-label">측정 항목 (이름 / 값 / 단위)</label>
+          ${rows}
+          <div class="flex gap-2 mt-1">
+            <button onclick="updateSectionAndRender('${sec.id}','${gKey}count',${Math.max(0,gCount-1)});renderPropPanel()"
+              class="flex-1 py-1 text-xs border border-slate-200 rounded text-slate-600 hover:bg-slate-50">− 항목</button>
+            <button onclick="updateSectionAndRender('${sec.id}','${gKey}count',${gCount+1});renderPropPanel()"
+              class="flex-1 py-1 text-xs border border-slate-200 rounded text-slate-600 hover:bg-slate-50">+ 항목</button>
+          </div>
+        </div>`;
+    };
+
+    panel.innerHTML = `
+      <div class="px-4 py-3 bg-indigo-50 border-b border-indigo-100">
+        <span class="text-sm font-bold text-indigo-800">사이즈 정보 (양산형)</span>
+      </div>
+      <div class="prop-section">
+        <label class="prop-label">다이어그램 이미지 (왼쪽)</label>
+        ${sec.imageUrl ? `<img src="${sec.imageUrl}" class="w-full rounded-lg mb-2 object-contain max-h-28 border border-slate-100">` : ''}
+        <div class="upload-zone" onclick="triggerImageUpload('${sec.id}')"
+             ondragover="event.preventDefault();this.classList.add('dragover')"
+             ondragleave="this.classList.remove('dragover')"
+             ondrop="event.preventDefault();this.classList.remove('dragover');handleDrop(event,'${sec.id}')">
+          <p class="text-xs text-indigo-600 font-medium">클릭 또는 드래그하여 교체</p>
+        </div>
+      </div>
+      ${mkGroupInputs('g1','그룹 1')}
+      ${mkGroupInputs('g2','그룹 2')}
+      ${mkGroupInputs('g3','그룹 3 (선택)')}
+      <div class="prop-section">
+        <label class="prop-label">소재 (MATERIAL)</label>
+        <input type="text" class="prop-input" value="${sec.material||''}"
+          oninput="updateSectionAndRender('${sec.id}','material',this.value)">
+      </div>
+      <div class="prop-section">
+        <label class="prop-label">무게 (WEIGHT)</label>
+        <input type="text" class="prop-input" value="${sec.weight||''}"
+          oninput="updateSectionAndRender('${sec.id}','weight',this.value)">
+      </div>
+      <div class="prop-section">
+        <label class="prop-label">배경 색상</label>
+        <div class="flex items-center gap-2">
+          <input type="color" value="${sec.bgColor||'#faf8ff'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+            oninput="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+          <input type="text" class="prop-input" value="${sec.bgColor||'#faf8ff'}"
+            onchange="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+        </div>
+      </div>
+      <div class="prop-section flex gap-2">
+        <button onclick="moveSectionUp('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↑ 위로</button>
+        <button onclick="moveSectionDown('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↓ 아래로</button>
+        <button onclick="duplicateSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-indigo-600 hover:bg-indigo-50 border border-indigo-200 rounded-lg">복제</button>
+        <button onclick="deleteSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg">삭제</button>
+      </div>`;
+    return;
+  }
+
   const isTable = sec.variant === 'table';
   const colCount = sec.colCount || 3;
   const rowCount = sec.rowCount || 1;
