@@ -116,13 +116,15 @@ function updateSectionCount() {
 function renderSectionList() {
   const list = document.getElementById('sectionList');
   const typeIcons = {
+    hero:  `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm0 0l7 9 7-9M3 15h18"/></svg>`,
+    promo: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>`,
     image: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`,
     grid2: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h4a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v12a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z"/></svg>`,
-    text: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h10"/></svg>`,
-    spacer: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>`,
+    text:  `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h10"/></svg>`,
+    spacer:`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>`,
   };
-  const typeColors = { image: 'text-indigo-500', grid2: 'text-purple-500', text: 'text-emerald-500', spacer: 'text-amber-500' };
-  const typeLabels = { image: '이미지', grid2: '2단 그리드', text: '텍스트', spacer: '여백' };
+  const typeColors = { hero:'text-pink-500', promo:'text-orange-500', image:'text-indigo-500', grid2:'text-purple-500', text:'text-emerald-500', spacer:'text-amber-500' };
+  const typeLabels = { hero:'히어로', promo:'홍보문구', image:'이미지', grid2:'2단 그리드', text:'텍스트', spacer:'여백' };
 
   list.innerHTML = pageData.sections.map((sec, idx) => {
     const isActive = sec.id === selectedSectionId;
@@ -207,10 +209,214 @@ function renderPropPanel() {
   empty.classList.add('hidden');
   panel.classList.remove('hidden');
 
-  if (sec.type === 'image') renderImageProps(sec);
-  else if (sec.type === 'grid2') renderGrid2Props(sec);
-  else if (sec.type === 'text') renderTextProps(sec);
+  if      (sec.type === 'hero')   renderHeroProps(sec);
+  else if (sec.type === 'promo')  renderPromoProps(sec);
+  else if (sec.type === 'image')  renderImageProps(sec);
+  else if (sec.type === 'grid2')  renderGrid2Props(sec);
+  else if (sec.type === 'text')   renderTextProps(sec);
   else if (sec.type === 'spacer') renderSpacerProps(sec);
+}
+
+function renderHeroProps(sec) {
+  const panel = document.getElementById('propPanel');
+  panel.innerHTML = `
+    <div class="px-4 py-3 bg-pink-50 border-b border-pink-100">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 bg-pink-500 rounded flex items-center justify-center">
+          <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01"/>
+          </svg>
+        </div>
+        <span class="text-sm font-bold text-pink-800">히어로 섹션 (3:4 대표컷)</span>
+      </div>
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">이미지 업로드</label>
+      ${sec.imageUrl ? `<img src="${sec.imageUrl}" class="w-full rounded-lg mb-2 object-cover max-h-32">` : ''}
+      <div class="upload-zone" onclick="triggerImageUpload('${sec.id}')"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="handleDrop(event,'${sec.id}')">
+        <p class="text-xs text-indigo-600 font-medium">클릭 또는 드래그하여 업로드 (3:4 비율 권장)</p>
+      </div>
+      <input type="text" class="prop-input mt-2" placeholder="이미지 URL 직접 입력" value="${sec.imageUrl||''}"
+        onchange="updateSectionAndRender('${sec.id}','imageUrl',this.value)">
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">하단 텍스트 — 메인 (한글)</label>
+      <input type="text" class="prop-input" placeholder="일상에 특별함을 더하다" value="${sec.subText||''}"
+        oninput="updateSectionAndRender('${sec.id}','subText',this.value)">
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">하단 텍스트 — 브랜드 (이탤릭)</label>
+      <input type="text" class="prop-input" placeholder="Brand Name" value="${sec.brandText||''}"
+        oninput="updateSectionAndRender('${sec.id}','brandText',this.value)">
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">텍스트 색상</label>
+      <div class="flex items-center gap-2">
+        <input type="color" value="${sec.textColor||'#333333'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+          oninput="updateSectionAndRender('${sec.id}','textColor',this.value)">
+        <input type="text" class="prop-input" value="${sec.textColor||'#333333'}"
+          onchange="updateSectionAndRender('${sec.id}','textColor',this.value)">
+      </div>
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">그라데이션 시작점: <span id="gsVal">${sec.gradStop!==undefined?sec.gradStop:42}</span>%</label>
+      <input type="range" min="10" max="80" value="${sec.gradStop!==undefined?sec.gradStop:42}"
+        oninput="document.getElementById('gsVal').textContent=this.value; updateSectionAndRender('${sec.id}','gradStop',parseInt(this.value))">
+      <p class="text-xs text-slate-400 mt-1">숫자가 클수록 그라데이션 영역이 넓어집니다</p>
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">그라데이션 색상 (주로 흰색)</label>
+      <div class="flex items-center gap-2">
+        <input type="color" value="${sec.gradColor||'#ffffff'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+          oninput="updateSectionAndRender('${sec.id}','gradColor',this.value)">
+        <input type="text" class="prop-input" value="${sec.gradColor||'#ffffff'}"
+          onchange="updateSectionAndRender('${sec.id}','gradColor',this.value)">
+      </div>
+    </div>
+
+    <div class="prop-section grid grid-cols-2 gap-3">
+      <div>
+        <label class="prop-label">바깥 여백: <span id="hpadVal">${sec.padding!==undefined?sec.padding:16}</span>px</label>
+        <input type="range" min="0" max="40" value="${sec.padding!==undefined?sec.padding:16}"
+          oninput="document.getElementById('hpadVal').textContent=this.value; updateSectionAndRender('${sec.id}','padding',parseInt(this.value))">
+      </div>
+      <div>
+        <label class="prop-label">모서리 둥글기: <span id="hradVal">${sec.radius!==undefined?sec.radius:10}</span>px</label>
+        <input type="range" min="0" max="30" value="${sec.radius!==undefined?sec.radius:10}"
+          oninput="document.getElementById('hradVal').textContent=this.value; updateSectionAndRender('${sec.id}','radius',parseInt(this.value))">
+      </div>
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">배경 색상</label>
+      <div class="flex items-center gap-2">
+        <input type="color" value="${sec.bgColor||'#ffffff'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+          oninput="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+        <input type="text" class="prop-input" value="${sec.bgColor||'#ffffff'}"
+          onchange="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+      </div>
+    </div>
+
+    <div class="prop-section flex gap-2">
+      <button onclick="moveSectionUp('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↑ 위로</button>
+      <button onclick="moveSectionDown('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↓ 아래로</button>
+      <button onclick="duplicateSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-indigo-600 hover:bg-indigo-50 border border-indigo-200 rounded-lg">복제</button>
+      <button onclick="deleteSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg">삭제</button>
+    </div>`;
+}
+
+function renderPromoProps(sec) {
+  const panel = document.getElementById('propPanel');
+  panel.innerHTML = `
+    <div class="px-4 py-3 bg-orange-50 border-b border-orange-100">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 bg-orange-500 rounded flex items-center justify-center">
+          <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+          </svg>
+        </div>
+        <span class="text-sm font-bold text-orange-800">홍보 문구 섹션</span>
+      </div>
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">메인 홍보문구 (굵게)</label>
+      <textarea class="prop-input resize-none" rows="3" placeholder="홍보 문구를 입력하세요"
+        oninput="updateSectionAndRender('${sec.id}','mainText',this.value)">${sec.mainText||''}</textarea>
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">서브 문구 (작게)</label>
+      <textarea class="prop-input resize-none" rows="3" placeholder="부제목이나 상세 설명"
+        oninput="updateSectionAndRender('${sec.id}','subText',this.value)">${sec.subText||''}</textarea>
+    </div>
+
+    <div class="prop-section grid grid-cols-2 gap-3">
+      <div>
+        <label class="prop-label">메인 크기: <span id="mfsVal">${sec.mainFontSize||22}</span>px</label>
+        <input type="range" min="14" max="48" value="${sec.mainFontSize||22}"
+          oninput="document.getElementById('mfsVal').textContent=this.value; updateSectionAndRender('${sec.id}','mainFontSize',parseInt(this.value))">
+      </div>
+      <div>
+        <label class="prop-label">서브 크기: <span id="sfsVal">${sec.subFontSize||14}</span>px</label>
+        <input type="range" min="10" max="24" value="${sec.subFontSize||14}"
+          oninput="document.getElementById('sfsVal').textContent=this.value; updateSectionAndRender('${sec.id}','subFontSize',parseInt(this.value))">
+      </div>
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">정렬</label>
+      <div class="flex gap-2">
+        <button class="toggle-btn ${(sec.textAlign||'center')==='left'?'active':''}" onclick="setPromoAlign('${sec.id}','left',this)">왼쪽</button>
+        <button class="toggle-btn ${(sec.textAlign||'center')==='center'?'active':''}" onclick="setPromoAlign('${sec.id}','center',this)">가운데</button>
+        <button class="toggle-btn ${(sec.textAlign||'center')==='right'?'active':''}" onclick="setPromoAlign('${sec.id}','right',this)">오른쪽</button>
+      </div>
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">메인 글자 색상</label>
+      <div class="flex items-center gap-2">
+        <input type="color" value="${sec.textColor||'#1a1a1a'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+          oninput="updateSectionAndRender('${sec.id}','textColor',this.value)">
+        <input type="text" class="prop-input" value="${sec.textColor||'#1a1a1a'}"
+          onchange="updateSectionAndRender('${sec.id}','textColor',this.value)">
+      </div>
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">서브 글자 색상</label>
+      <div class="flex items-center gap-2">
+        <input type="color" value="${sec.subColor||'#888888'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+          oninput="updateSectionAndRender('${sec.id}','subColor',this.value)">
+        <input type="text" class="prop-input" value="${sec.subColor||'#888888'}"
+          onchange="updateSectionAndRender('${sec.id}','subColor',this.value)">
+      </div>
+    </div>
+
+    <div class="prop-section">
+      <label class="prop-label">배경 색상</label>
+      <div class="flex items-center gap-2">
+        <input type="color" value="${sec.bgColor||'#ffffff'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+          oninput="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+        <input type="text" class="prop-input" value="${sec.bgColor||'#ffffff'}"
+          onchange="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+      </div>
+    </div>
+
+    <div class="prop-section grid grid-cols-2 gap-3">
+      <div>
+        <label class="prop-label">상하 여백: <span id="ppvVal">${sec.paddingV||50}</span>px</label>
+        <input type="range" min="10" max="100" value="${sec.paddingV||50}"
+          oninput="document.getElementById('ppvVal').textContent=this.value; updateSectionAndRender('${sec.id}','paddingV',parseInt(this.value))">
+      </div>
+      <div>
+        <label class="prop-label">좌우 여백: <span id="pphVal">${sec.paddingH||40}</span>px</label>
+        <input type="range" min="0" max="100" value="${sec.paddingH||40}"
+          oninput="document.getElementById('pphVal').textContent=this.value; updateSectionAndRender('${sec.id}','paddingH',parseInt(this.value))">
+      </div>
+    </div>
+
+    <div class="prop-section flex gap-2">
+      <button onclick="moveSectionUp('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↑ 위로</button>
+      <button onclick="moveSectionDown('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↓ 아래로</button>
+      <button onclick="duplicateSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-indigo-600 hover:bg-indigo-50 border border-indigo-200 rounded-lg">복제</button>
+      <button onclick="deleteSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg">삭제</button>
+    </div>`;
+}
+
+function setPromoAlign(id, align, btn) {
+  document.querySelectorAll('#propPanel .toggle-btn[onclick*="setPromoAlign"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateSectionAndRender(id, 'textAlign', align);
 }
 
 function renderGrid2Props(sec) {
@@ -499,10 +705,19 @@ function setAlign(id, align, btn) {
 
 function addSection(type) {
   let newSec;
-  if (type === 'image') {
+  if (type === 'hero') {
+    newSec = { id: generateId(), type: 'hero', imageUrl: '', bgColor: '#ffffff', padding: 16, radius: 10,
+      subText: '일상에 특별함을 더하다', brandText: 'Brand Name',
+      textColor: '#333333', gradStop: 42, gradColor: '#ffffff', label: '대표 컷' };
+  } else if (type === 'promo') {
+    newSec = { id: generateId(), type: 'promo',
+      mainText: '홍보 문구를 입력하세요', subText: '부제목을 입력하세요.',
+      mainFontSize: 22, subFontSize: 14, textColor: '#1a1a1a', subColor: '#888888',
+      lineColor: '#dddddd', textAlign: 'center', bgColor: '#ffffff', paddingV: 50, paddingH: 40 };
+  } else if (type === 'image') {
     newSec = { id: generateId(), type: 'image', imageUrl: '', bgColor: '#ffffff', padding: 0, label: '새 이미지' };
   } else if (type === 'grid2') {
-    newSec = { id: generateId(), type: 'grid2', imageUrl1: '', imageUrl2: '', bgColor: '#ffffff', gap: 2, label1: '왼쪽 이미지', label2: '오른쪽 이미지' };
+    newSec = { id: generateId(), type: 'grid2', imageUrl1: '', imageUrl2: '', bgColor: '#ffffff', gap: 2, padding: 0, label1: '왼쪽 이미지', label2: '오른쪽 이미지' };
   } else if (type === 'text') {
     newSec = { id: generateId(), type: 'text', text: '텍스트를 입력하세요', fontSize: 16, fontWeight: 'normal', color: '#333333', textAlign: 'center', bgColor: '#ffffff', paddingV: 20, paddingH: 20 };
   } else if (type === 'spacer') {

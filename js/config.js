@@ -27,72 +27,66 @@ const TEMPLATES = [
   {
     id: 'tpl_basic',
     name: '기본 상품 상세',
-    description: '실제 쇼핑몰 구조 — 대표컷·4각도 그리드·모델컷·디테일·안내',
+    description: '히어로컷 + 홍보문구 + 이미지 배열 (모든 카테고리 공용)',
     thumbnail: null,
     category: '범용',
-    // ─────────────────────────────────────────────────────────
-    // 첨부 이미지 구조 기준:
-    //  1. 대표 컷 (전체 컬렉션 컷 or 메인 단독샷)
-    //  2. 상품 4각도 2×2 그리드 (정면/측면/후면/디테일)
-    //  3. 모델 착용샷 1 (전신)
-    //  4. 모델 착용샷 2 (클로즈업/상반신)
-    //  5. 상품 단독 촬영 컷
-    //  6. 모델 착용샷 3 (측면/다른 스타일)
-    //  7. 상품 디테일 클로즈업
-    //  8. 모델 착용샷 4
-    //  9. 모델 착용샷 5 (라이프스타일)
-    // 10. 상품 내부/기능 컷
-    // 11. 사이즈 정보 이미지
-    // 12. 배송·교환 안내 이미지(또는 텍스트)
-    // ─────────────────────────────────────────────────────────
     sections: [
-      // ① 대표 컷
-      { id: 's1',  type: 'image',  imageUrl: '', bgColor: '#ffffff', padding: 0, label: '① 대표 컷 (메인 상품샷)' },
+      // ① 대표컷 — 3:4 비율 + 하단 그라데이션 텍스트
+      { id: 's1', type: 'hero',
+        imageUrl: '', bgColor: '#ffffff', padding: 16, radius: 10,
+        subText: '일상에 특별함을 더하다',
+        brandText: 'Brand Name',
+        textColor: '#333333', gradStop: 42, gradColor: '#ffffff',
+        label: '대표 컷 (3:4 비율)' },
 
-      // ② 상품 4각도 — 2×2 그리드
-      { id: 's2',  type: 'grid2', imageUrl1: '', imageUrl2: '', bgColor: '#ffffff', gap: 2,
-        label1: '② 정면 컷', label2: '② 측면 컷' },
-      { id: 's3',  type: 'grid2', imageUrl1: '', imageUrl2: '', bgColor: '#ffffff', gap: 2,
-        label1: '② 후면 컷', label2: '② 디테일/컬러 컷' },
+      // ② 홍보문구
+      { id: 's2', type: 'promo',
+        mainText: '홍보 문구를 입력하세요',
+        subText: '상품의 특징과 매력을 담은 부제목을 입력하세요.\n간결하고 인상적인 문장을 작성해보세요.',
+        mainFontSize: 22, subFontSize: 14,
+        textColor: '#1a1a1a', subColor: '#888888', lineColor: '#dddddd',
+        textAlign: 'center', bgColor: '#ffffff', paddingV: 50, paddingH: 40 },
 
-      // ③ 모델 착용샷 1
-      { id: 's4',  type: 'image',  imageUrl: '', bgColor: '#ffffff', padding: 0, label: '③ 모델 착용샷 1 (전신)' },
+      // ③ 이미지 1장 — 여백
+      { id: 's3', type: 'image',
+        imageUrl: '', bgColor: '#ffffff', padding: 20, label: '상품 이미지 1' },
 
-      // ④ 모델 착용샷 2
-      { id: 's5',  type: 'image',  imageUrl: '', bgColor: '#ffffff', padding: 0, label: '④ 모델 착용샷 2 (상반신)' },
+      // ④ 이미지 2장 — 2단 그리드 + 여백
+      { id: 's4', type: 'grid2',
+        imageUrl1: '', imageUrl2: '', bgColor: '#ffffff', gap: 8, padding: 20,
+        label1: '상품 이미지 2', label2: '상품 이미지 3' },
 
-      // ⑤ 상품 단독 촬영
-      { id: 's6',  type: 'image',  imageUrl: '', bgColor: '#ffffff', padding: 0, label: '⑤ 상품 단독 촬영 컷' },
+      // ⑤ 이미지 1장
+      { id: 's5', type: 'image',
+        imageUrl: '', bgColor: '#ffffff', padding: 20, label: '모델 착용샷 1' },
 
-      // ⑥ 모델 착용샷 3
-      { id: 's7',  type: 'image',  imageUrl: '', bgColor: '#ffffff', padding: 0, label: '⑥ 모델 착용샷 3 (측면/코디)' },
+      // ⑥ 이미지 2장
+      { id: 's6', type: 'grid2',
+        imageUrl1: '', imageUrl2: '', bgColor: '#ffffff', gap: 8, padding: 20,
+        label1: '모델 착용샷 2', label2: '모델 착용샷 3' },
 
-      // ⑦ 상품 디테일 클로즈업
-      { id: 's8',  type: 'image',  imageUrl: '', bgColor: '#ffffff', padding: 0, label: '⑦ 상품 디테일 클로즈업' },
+      // ⑦ 이미지 1장
+      { id: 's7', type: 'image',
+        imageUrl: '', bgColor: '#ffffff', padding: 20, label: '모델 착용샷 4' },
 
-      // ⑧ 모델 착용샷 4
-      { id: 's9',  type: 'image',  imageUrl: '', bgColor: '#ffffff', padding: 0, label: '⑧ 모델 착용샷 4' },
+      // ⑧ 이미지 2장
+      { id: 's8', type: 'grid2',
+        imageUrl1: '', imageUrl2: '', bgColor: '#ffffff', gap: 8, padding: 20,
+        label1: '디테일 클로즈업 1', label2: '디테일 클로즈업 2' },
 
-      // ⑨ 모델 라이프스타일
-      { id: 's10', type: 'image',  imageUrl: '', bgColor: '#ffffff', padding: 0, label: '⑨ 모델 착용샷 5 (라이프스타일)' },
+      // ⑨ 이미지 1장
+      { id: 's9', type: 'image',
+        imageUrl: '', bgColor: '#ffffff', padding: 20, label: '상품 내부/기능 컷' },
 
-      // ⑩ 상품 내부/기능
-      { id: 's11', type: 'image',  imageUrl: '', bgColor: '#ffffff', padding: 0, label: '⑩ 상품 내부/기능 컷' },
-
-      // 여백
-      { id: 's12', type: 'spacer', height: 6, bgColor: '#f0f0f0' },
-
-      // ⑪ 사이즈 정보
-      { id: 's13', type: 'image',  imageUrl: '', bgColor: '#ffffff', padding: 0, label: '⑪ 사이즈 정보 이미지' },
-
-      // 여백
-      { id: 's14', type: 'spacer', height: 6, bgColor: '#f0f0f0' },
-
-      // ⑫ 배송·교환 안내
-      { id: 's15', type: 'text',
-        text: '[ 주문 및 배송 안내 ]\n\n• 주문 후 1~3 영업일 이내 발송됩니다.\n• 제주·도서산간 지역은 추가 배송비가 발생할 수 있습니다.\n\n[ 교환 및 반품 안내 ]\n\n• 수령 후 7일 이내 교환·반품 가능합니다.\n• 착용·세탁 후에는 교환·반품이 불가합니다.\n• 색상은 모니터 환경에 따라 다소 차이가 있을 수 있습니다.',
-        fontSize: 13, fontWeight: 'normal', color: '#666666', textAlign: 'left',
-        bgColor: '#fafafa', paddingV: 30, paddingH: 40 },
+      // 사이즈 & 배송
+      { id: 's10', type: 'spacer', height: 8, bgColor: '#f5f5f5' },
+      { id: 's11', type: 'image',
+        imageUrl: '', bgColor: '#f5f5f5', padding: 20, label: '사이즈 정보 이미지' },
+      { id: 's12', type: 'spacer', height: 8, bgColor: '#f5f5f5' },
+      { id: 's13', type: 'text',
+        text: '[ 주문 및 배송 안내 ]\n\n• 주문 후 1~3 영업일 이내 발송됩니다.\n• 제주·도서산간 지역은 추가 배송비가 발생할 수 있습니다.\n\n[ 교환 및 반품 안내 ]\n\n• 수령 후 7일 이내 교환·반품 가능합니다.\n• 착용·세탁 후 교환·반품이 불가합니다.\n• 색상은 모니터 환경에 따라 다소 차이가 있을 수 있습니다.',
+        fontSize: 13, fontWeight: 'normal', color: '#888888', textAlign: 'left',
+        bgColor: '#f5f5f5', paddingV: 30, paddingH: 40 },
     ]
   },
   {

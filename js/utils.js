@@ -251,10 +251,115 @@ function renderSectionHTML(section) {
   const id = section.id;
   const isEditor = window.DC_EDITOR === true;
 
+  // ── 히어로 (3:4 비율 + 하단 그라데이션 텍스트) ──
+  if (section.type === 'hero') {
+    const bg         = section.bgColor || '#ffffff';
+    const pad        = section.padding !== undefined ? section.padding : 16;
+    const radius     = section.radius  !== undefined ? section.radius  : 10;
+    const subText    = section.subText  || '';
+    const brandText  = section.brandText || '';
+    const textColor  = section.textColor || '#333333';
+    const gradStop   = section.gradStop  !== undefined ? section.gradStop : 45; // %
+    const gradColor  = section.gradColor || '#ffffff';
+    const click = isEditor ? `onclick="event.stopPropagation();editorUploadImage('${id}')"` : '';
+
+    // 이미지 or 플레이스홀더
+    let imgEl = '';
+    if (section.imageUrl) {
+      imgEl = `<img src="${section.imageUrl}"
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;"
+        alt="${section.label||''}">`;
+    } else {
+      imgEl = `<div ${click} style="position:absolute;inset:0;background:#f0f0f0;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        color:#c0c0c0;z-index:1;${isEditor?'cursor:pointer;':''}
+        border:2px dashed #e0e0e0;"
+        ${isEditor?`onmouseenter="this.style.background='#eef2ff';this.style.borderColor='#818cf8'"
+        onmouseleave="this.style.background='#f0f0f0';this.style.borderColor='#e0e0e0'"`:''}>
+        <div style="width:52px;height:52px;border-radius:50%;background:#e8e8e8;
+          display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+          <svg width="26" height="26" fill="none" stroke="#aaa" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86
+              a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5
+              a2 2 0 01-2-2V9z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <span style="font-size:14px;font-weight:600;color:#aaa;">대표 이미지 (3:4 비율)</span>
+        ${isEditor?'<span style="font-size:11px;color:#c0c0c0;margin-top:5px;">클릭하여 이미지 선택</span>':''}
+      </div>`;
+    }
+
+    // 그라데이션 텍스트 오버레이
+    const hasText = subText || brandText;
+    const textOverlay = hasText ? `
+      <div style="position:absolute;bottom:0;left:0;right:0;z-index:2;pointer-events:none;
+        background:linear-gradient(to bottom, transparent 0%, ${gradColor} ${gradStop}%);
+        padding:70px 24px 28px;text-align:center;">
+        ${subText ? `<p style="font-size:15px;color:${textColor};margin:0 0 8px;
+          font-weight:500;letter-spacing:0.04em;
+          font-family:'Noto Sans KR',sans-serif;">${subText}</p>` : ''}
+        ${brandText ? `<p style="font-size:24px;color:${textColor};margin:0;
+          font-style:italic;font-family:Georgia,'Times New Roman',serif;">${brandText}</p>` : ''}
+      </div>` : '';
+
+    // 에디터 변경 버튼 (이미지 있을 때 우상단 뱃지)
+    const changeBtn = (isEditor && section.imageUrl) ? `
+      <button onclick="event.stopPropagation();editorUploadImage('${id}')"
+        style="position:absolute;top:10px;right:10px;z-index:10;
+          background:rgba(0,0,0,0.55);color:#fff;border:none;
+          padding:6px 13px;border-radius:7px;font-size:12px;cursor:pointer;
+          font-family:'Noto Sans KR',sans-serif;display:flex;align-items:center;gap:5px;">
+        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07
+            4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9
+            a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        이미지 변경
+      </button>` : '';
+
+    return `<div id="${id}" style="background:${bg};padding:${pad}px;">
+      <div style="position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:${radius}px;">
+        ${imgEl}
+        ${textOverlay}
+        ${changeBtn}
+      </div>
+    </div>`;
+  }
+
+  // ── 홍보문구 (Promo) ──────────────────────────
+  if (section.type === 'promo') {
+    const bg         = section.bgColor   || '#ffffff';
+    const pv         = section.paddingV  !== undefined ? section.paddingV  : 50;
+    const ph         = section.paddingH  !== undefined ? section.paddingH  : 40;
+    const mainText   = (section.mainText  || '').replace(/\n/g, '<br>');
+    const subText    = (section.subText   || '').replace(/\n/g, '<br>');
+    const mainSize   = section.mainFontSize !== undefined ? section.mainFontSize : 22;
+    const subSize    = section.subFontSize  !== undefined ? section.subFontSize  : 14;
+    const textColor  = section.textColor  || '#1a1a1a';
+    const subColor   = section.subColor   || '#888888';
+    const lineColor  = section.lineColor  || '#dddddd';
+    const align      = section.textAlign  || 'center';
+    return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;text-align:${align};">
+      ${mainText ? `<p style="font-size:${mainSize}px;font-weight:bold;color:${textColor};
+        margin:0 0 16px;line-height:1.6;font-family:'Noto Sans KR',sans-serif;">${mainText}</p>` : ''}
+      <div style="width:28px;height:2px;background:${lineColor};
+        margin:0 ${align==='center'?'auto':align==='right'?'0 0 0 auto':'0'} 16px;
+        ${align==='left'?'':'display:inline-block;vertical-align:top;'}"></div>
+      ${subText ? `<p style="font-size:${subSize}px;color:${subColor};margin:0;
+        line-height:1.9;font-family:'Noto Sans KR',sans-serif;">${subText}</p>` : ''}
+    </div>`;
+  }
+
   // ── 단일 이미지 ──────────────────────────────
   if (section.type === 'image') {
-    const bg = section.bgColor || '#ffffff';
-    const pad = section.padding || 0;
+    const bg  = section.bgColor  || '#ffffff';
+    const pad = section.padding  || 0;
     const click = isEditor ? `onclick="event.stopPropagation();editorUploadImage('${id}')"` : '';
     let inner;
     if (section.imageUrl) {
@@ -268,18 +373,21 @@ function renderSectionHTML(section) {
   // ── 2단 그리드 이미지 ──────────────────────────
   if (section.type === 'grid2') {
     const bg  = section.bgColor || '#ffffff';
-    const gap = section.gap !== undefined ? section.gap : 2;
+    const gap = section.gap     !== undefined ? section.gap     : 2;
+    const pad = section.padding !== undefined ? section.padding : 0;
     const click1 = isEditor ? `onclick="event.stopPropagation();editorUploadGrid2('${id}',1)"` : '';
     const click2 = isEditor ? `onclick="event.stopPropagation();editorUploadGrid2('${id}',2)"` : '';
     const left  = section.imageUrl1
       ? _imgWithOverlay(section.imageUrl1, section.label1, click1)
-      : _imgPlaceholder(section.label1 || '왼쪽 이미지', click1, 280);
+      : _imgPlaceholder(section.label1 || '왼쪽 이미지', click1, 260);
     const right = section.imageUrl2
       ? _imgWithOverlay(section.imageUrl2, section.label2, click2)
-      : _imgPlaceholder(section.label2 || '오른쪽 이미지', click2, 280);
-    return `<div id="${id}" style="background:${bg};display:flex;gap:${gap}px;align-items:stretch;">
-      <div style="flex:1;min-width:0;">${left}</div>
-      <div style="flex:1;min-width:0;">${right}</div>
+      : _imgPlaceholder(section.label2 || '오른쪽 이미지', click2, 260);
+    return `<div id="${id}" style="background:${bg};padding:${pad}px;">
+      <div style="display:flex;gap:${gap}px;align-items:stretch;">
+        <div style="flex:1;min-width:0;">${left}</div>
+        <div style="flex:1;min-width:0;">${right}</div>
+      </div>
     </div>`;
   }
 
@@ -302,7 +410,7 @@ function renderSectionHTML(section) {
   // ── 여백 ─────────────────────────────────────
   if (section.type === 'spacer') {
     const bg = section.bgColor || '#f5f5f5';
-    const h  = section.height || 20;
+    const h  = section.height  || 20;
     return `<div id="${id}" style="background:${bg};height:${h}px;"></div>`;
   }
 
