@@ -10,8 +10,10 @@ let selectedAIStyle = 'standard';
 // ── 초기화 ────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
+  renderCategoryTabs();
+  renderStatsBoxes();
   renderTemplateGrid();
-  setupCategoryTabs();
+  populateCategorySelect();
   setupSearch();
 
   if (!CONFIG.SUPABASE_ANON_KEY) {
@@ -28,7 +30,7 @@ async function loadPages() {
   showLoadingState();
   try {
     allPages = await fetchAllPages();
-    updateStats();
+    renderStatsBoxes();
     renderPages();
   } catch (e) {
     console.error(e);
@@ -36,13 +38,81 @@ async function loadPages() {
   }
 }
 
-function updateStats() {
-  document.getElementById('stat-total').textContent = allPages.length;
-  document.getElementById('stat-bag').textContent = allPages.filter(p => p.category === '가방').length;
-  document.getElementById('stat-clothing').textContent = allPages.filter(p => p.category === '의류').length;
-  const other = allPages.filter(p => !['가방', '의류'].includes(p.category)).length;
-  document.getElementById('stat-other').textContent = other;
+// ── 통계 박스 (동적) ──────────────────────────
+
+function renderStatsBoxes() {
+  const cats = getCategories();
+  const grid = document.getElementById('statsGrid');
+  if (!grid) return;
+
+  const totalCount = allPages.length;
+
+  // 전체 박스
+  let html = `
+    <div class="bg-white rounded-2xl p-4 border-2 cursor-pointer transition-all
+      ${currentCategory === 'all' ? 'border-indigo-400 shadow-md' : 'border-slate-100 shadow-sm hover:border-indigo-200'}"
+      onclick="filterByCategory('all')">
+      <div class="text-2xl font-bold text-slate-900">${totalCount > 0 ? totalCount : '—'}</div>
+      <div class="text-xs text-slate-500 mt-1 font-medium">전체</div>
+    </div>`;
+
+  // 카테고리별 박스
+  cats.forEach((cat, idx) => {
+    const count = allPages.filter(p => p.category === cat).length;
+    const palette = CAT_PALETTE[idx % CAT_PALETTE.length];
+    const isActive = currentCategory === cat;
+    html += `
+      <div class="bg-white rounded-2xl p-4 border-2 cursor-pointer transition-all
+        ${isActive ? 'border-indigo-400 shadow-md' : 'border-slate-100 shadow-sm hover:border-indigo-200'}"
+        onclick="filterByCategory('${cat}')">
+        <div class="text-2xl font-bold" style="color:${palette.hex};">${count > 0 ? count : '—'}</div>
+        <div class="text-xs text-slate-500 mt-1 font-medium flex items-center gap-1">
+          ${cat}
+          <button onclick="event.stopPropagation();openDeleteCategoryConfirm('${cat}')"
+            class="ml-auto text-slate-300 hover:text-rose-400 transition-colors leading-none"
+            title="카테고리 삭제">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>`;
+  });
+
+  grid.innerHTML = html;
 }
+
+function filterByCategory(cat) {
+  currentCategory = cat;
+  renderStatsBoxes();
+  renderCategoryTabs();
+  renderPages();
+}
+
+// ── 카테고리 탭 (동적) ────────────────────────
+
+function renderCategoryTabs() {
+  const cats = getCategories();
+  const tabsEl = document.getElementById('categoryTabs');
+  if (!tabsEl) return;
+
+  let html = `<button class="category-tab ${currentCategory === 'all' ? 'active' : ''} rounded-full px-4 py-1.5 text-sm font-medium"
+    onclick="filterByCategory('all')">전체</button>`;
+
+  cats.forEach(cat => {
+    html += `<button class="category-tab ${currentCategory === cat ? 'active' : ''} rounded-full px-4 py-1.5 text-sm font-medium"
+      onclick="filterByCategory('${cat}')">${cat}</button>`;
+  });
+
+  // "+" 카테고리 추가 버튼
+  html += `<button onclick="openAddCategoryModal()"
+    class="rounded-full px-3 py-1.5 text-sm font-medium bg-slate-100 text-slate-500 hover:bg-indigo-100 hover:text-indigo-600 transition-colors"
+    title="카테고리 추가">+ 카테고리</button>`;
+
+  tabsEl.innerHTML = html;
+}
+
+// ── 페이지 렌더링 ─────────────────────────────
 
 function renderPages() {
   const query = document.getElementById('searchInput').value.toLowerCase();
@@ -71,7 +141,7 @@ function renderPages() {
 }
 
 function createPageCard(page) {
-  const catColor = CATEGORY_COLORS[page.category] || CATEGORY_COLORS['기타'];
+  const catColor = getCategoryColor(page.category) || 'bg-slate-100 text-slate-600';
   const sectionCount = Array.isArray(page.sections) ? page.sections.length : 0;
   const date = timeAgo(page.updated_at || page.created_at);
 
@@ -143,19 +213,6 @@ function showEmptyState(msg, isSetup = false) {
     </div>`;
 }
 
-// ── 카테고리 탭 ───────────────────────────────
-
-function setupCategoryTabs() {
-  document.querySelectorAll('.category-tab').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.category-tab').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentCategory = btn.dataset.category;
-      renderPages();
-    });
-  });
-}
-
 // ── 검색 & 정렬 ──────────────────────────────
 
 function setupSearch() {
@@ -172,9 +229,6 @@ function editPage(id) {
 // ── 페이지 다운로드 ───────────────────────────
 
 async function downloadPage(id) {
-  const page = allPages.find(p => p.id === id);
-  if (!page) return;
-
   showToast('미리보기 창에서 다운로드하세요...', 'info');
   window.location.href = `editor.html?id=${id}&download=1`;
 }
@@ -195,33 +249,27 @@ function confirmDeletePage(id, title) {
 
 // ── 새 페이지 모달 ────────────────────────────
 
+function populateCategorySelect() {
+  const sel = document.getElementById('newPageCategory');
+  if (!sel) return;
+  const cats = getCategories();
+  sel.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
 function renderTemplateGrid() {
   const grid = document.getElementById('templateGrid');
   if (!grid) return;
   grid.innerHTML = TEMPLATES.map(t => `
-    <div class="template-card border-2 rounded-xl p-4 cursor-pointer transition-all ${t.id === selectedTemplate ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 hover:border-indigo-300'}"
+    <div class="template-card border-2 rounded-xl p-3 cursor-pointer transition-all ${t.id === selectedTemplate ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 hover:border-indigo-300'}"
          onclick="selectTemplate('${t.id}')" data-id="${t.id}">
-      <div class="aspect-[2/3] bg-gradient-to-b from-slate-100 to-slate-200 rounded-lg mb-3 flex items-center justify-center">
-        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="aspect-[2/3] bg-gradient-to-b from-slate-100 to-slate-200 rounded-lg mb-2 flex items-center justify-center">
+        <svg class="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
         </svg>
       </div>
-      <div class="font-semibold text-slate-800 text-sm">${t.name}</div>
-      <div class="text-xs text-slate-400 mt-0.5">${t.description}</div>
+      <div class="font-semibold text-slate-800 text-xs">${t.name}</div>
+      <div class="text-xs text-slate-400 mt-0.5 leading-tight">${t.description}</div>
     </div>`).join('');
-
-  // AI 스타일 버튼
-  document.querySelectorAll('.ai-style-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.ai-style-btn').forEach(b => {
-        b.classList.remove('bg-indigo-100', 'text-indigo-700', 'border-indigo-400');
-        b.classList.add('bg-white', 'text-slate-600', 'border-transparent');
-      });
-      btn.classList.add('bg-indigo-100', 'text-indigo-700', 'border-indigo-400');
-      btn.classList.remove('bg-white', 'text-slate-600', 'border-transparent');
-      selectedAIStyle = btn.dataset.style;
-    });
-  });
 }
 
 function selectTemplate(id) {
@@ -238,6 +286,7 @@ function selectTemplate(id) {
 }
 
 function openNewPageModal() {
+  populateCategorySelect();
   document.getElementById('newPageModal').classList.remove('hidden');
   renderTemplateGrid();
 }
@@ -272,6 +321,89 @@ function generateAndCreate() {
   sessionStorage.setItem('dc_new_page', JSON.stringify(aiPage));
   closeNewPageModal();
   window.location.href = 'editor.html?mode=new';
+}
+
+// ── 카테고리 추가/삭제 모달 ──────────────────
+
+function openAddCategoryModal() {
+  document.getElementById('newCategoryName').value = '';
+  renderCategoryListInModal();
+  document.getElementById('addCategoryModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('newCategoryName').focus(), 50);
+}
+
+function closeAddCategoryModal() {
+  document.getElementById('addCategoryModal').classList.add('hidden');
+}
+
+function renderCategoryListInModal() {
+  const cats = getCategories();
+  const listEl = document.getElementById('categoryList');
+  if (!listEl) return;
+  if (cats.length === 0) {
+    listEl.innerHTML = '<p class="text-xs text-slate-400">등록된 카테고리 없음</p>';
+    return;
+  }
+  listEl.innerHTML = `
+    <p class="text-xs font-semibold text-slate-500 mb-1.5">현재 카테고리</p>
+    ${cats.map((cat, idx) => {
+      const palette = CAT_PALETTE[idx % CAT_PALETTE.length];
+      return `<div class="flex items-center justify-between py-1.5 px-3 rounded-lg bg-slate-50">
+        <span class="text-sm font-medium px-2 py-0.5 rounded-full ${palette.bg} ${palette.text}">${cat}</span>
+        <button onclick="deleteCategoryInModal('${cat}')"
+          class="text-slate-300 hover:text-rose-500 transition-colors p-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+        </button>
+      </div>`;
+    }).join('')}`;
+}
+
+function confirmAddCategory() {
+  const name = document.getElementById('newCategoryName').value.trim();
+  if (!name) { showToast('카테고리 이름을 입력하세요.', 'warning'); return; }
+  if (addCategory(name)) {
+    document.getElementById('newCategoryName').value = '';
+    renderCategoryListInModal();
+    renderCategoryTabs();
+    renderStatsBoxes();
+    populateCategorySelect();
+    showToast(`"${name}" 카테고리가 추가되었습니다.`, 'success');
+  } else {
+    showToast('이미 존재하는 카테고리입니다.', 'warning');
+  }
+}
+
+function deleteCategoryInModal(cat) {
+  const pages = allPages.filter(p => p.category === cat);
+  if (pages.length > 0) {
+    showToast(`"${cat}" 카테고리에 ${pages.length}개의 페이지가 있어 삭제할 수 없습니다.`, 'error');
+    return;
+  }
+  removeCategory(cat);
+  if (currentCategory === cat) currentCategory = 'all';
+  renderCategoryListInModal();
+  renderCategoryTabs();
+  renderStatsBoxes();
+  populateCategorySelect();
+  showToast(`"${cat}" 카테고리가 삭제되었습니다.`, 'success');
+}
+
+function openDeleteCategoryConfirm(cat) {
+  const pages = allPages.filter(p => p.category === cat);
+  if (pages.length > 0) {
+    showToast(`"${cat}" 카테고리에 ${pages.length}개의 페이지가 있어 삭제할 수 없습니다.`, 'error');
+    return;
+  }
+  showConfirm(`"${cat}" 카테고리를 삭제하시겠습니까?`, () => {
+    removeCategory(cat);
+    if (currentCategory === cat) currentCategory = 'all';
+    renderCategoryTabs();
+    renderStatsBoxes();
+    populateCategorySelect();
+    showToast(`"${cat}" 카테고리가 삭제되었습니다.`, 'success');
+  });
 }
 
 // ── 설정 모달 ─────────────────────────────────

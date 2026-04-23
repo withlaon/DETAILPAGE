@@ -46,6 +46,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     pageData.sections = deepClone(TEMPLATES[0].sections).map(s => ({ ...s, id: generateId() }));
   }
 
+  // 카테고리 셀렉트 동적 채우기
+  const catSel = document.getElementById('pageCategorySelect');
+  if (catSel) {
+    const cats = getCategories();
+    catSel.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+
   // UI 초기화
   document.getElementById('pageTitle').value = pageData.title;
   document.getElementById('pageCategorySelect').value = pageData.category;

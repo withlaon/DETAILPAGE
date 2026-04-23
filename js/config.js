@@ -10,13 +10,61 @@ const CONFIG = {
   PAGE_WIDTH: 860,
 };
 
-const CATEGORIES = ['가방', '모자', '의류', '양산'];
+// 카테고리 목록 (localStorage 영속)
+const DEFAULT_CATEGORIES = ['가방', '모자', '의류', '양산'];
+
+function getCategories() {
+  try {
+    const saved = localStorage.getItem('dc_categories');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return [...DEFAULT_CATEGORIES];
+}
+
+function saveCategories(cats) {
+  localStorage.setItem('dc_categories', JSON.stringify(cats));
+}
+
+function addCategory(name) {
+  const cats = getCategories();
+  if (!name || cats.includes(name)) return false;
+  cats.push(name);
+  saveCategories(cats);
+  return true;
+}
+
+function removeCategory(name) {
+  const cats = getCategories().filter(c => c !== name);
+  saveCategories(cats);
+}
+
+// 색상 팔레트 (카테고리 인덱스 기반 순환)
+const CAT_PALETTE = [
+  { bg: 'bg-indigo-100', text: 'text-indigo-700', hex: '#4f46e5' },
+  { bg: 'bg-amber-100',  text: 'text-amber-700',  hex: '#b45309' },
+  { bg: 'bg-emerald-100', text: 'text-emerald-700', hex: '#047857' },
+  { bg: 'bg-rose-100',   text: 'text-rose-700',   hex: '#be123c' },
+  { bg: 'bg-violet-100', text: 'text-violet-700', hex: '#6d28d9' },
+  { bg: 'bg-cyan-100',   text: 'text-cyan-700',   hex: '#0e7490' },
+  { bg: 'bg-orange-100', text: 'text-orange-700', hex: '#c2410c' },
+  { bg: 'bg-pink-100',   text: 'text-pink-700',   hex: '#be185d' },
+];
+
+function getCategoryColor(cat) {
+  const cats = getCategories();
+  const idx = cats.indexOf(cat);
+  if (idx >= 0) return CAT_PALETTE[idx % CAT_PALETTE.length].bg + ' ' + CAT_PALETTE[idx % CAT_PALETTE.length].text;
+  return 'bg-slate-100 text-slate-600';
+}
+
+function getCategoryHex(cat) {
+  const cats = getCategories();
+  const idx = cats.indexOf(cat);
+  if (idx >= 0) return CAT_PALETTE[idx % CAT_PALETTE.length].hex;
+  return '#64748b';
+}
 
 const CATEGORY_COLORS = {
-  '가방': 'bg-indigo-100 text-indigo-700',
-  '모자': 'bg-amber-100 text-amber-700',
-  '의류': 'bg-emerald-100 text-emerald-700',
-  '양산': 'bg-rose-100 text-rose-700',
   '기타': 'bg-slate-100 text-slate-600',
 };
 
