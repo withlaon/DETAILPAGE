@@ -521,7 +521,7 @@ function renderSectionHTML(section) {
           </div>`;
       return `<div style="width:${itemW};flex:0 0 ${itemW};text-align:center;">
         ${imgEl}
-        <p style="font-size:14px;font-weight:700;color:#555;margin:8px 0 0;padding:0 2px;
+        <p style="font-size:16px;font-weight:700;color:#111;margin:8px 0 0;padding:0 2px;
           font-family:'Noto Sans KR',sans-serif;line-height:1.4;">
           ${name || (isEditor ? '<span style="color:#ccc;">옵션명</span>' : '')}
         </p>
