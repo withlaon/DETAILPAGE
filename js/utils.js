@@ -551,9 +551,14 @@ function renderSectionHTML(section) {
     const ph    = section.paddingH !== undefined ? section.paddingH : 20;
     const title = section.title    || 'Detail View';
     const gap   = section.gap      !== undefined ? section.gap : 6;
-    const rows  = [[1,2],[3,4]];
+    // count 기반 동적 행 생성 (기본 2장, 한 행당 2개)
+    const count = Math.max(section.count || 2, 1);
+    const pairs = [];
+    for (let r = 0; r < count; r += 2) {
+      pairs.push([r + 1, r + 2 <= count ? r + 2 : null].filter(Boolean));
+    }
 
-    const rowsHtml = rows.map(pair => {
+    const rowsHtml = pairs.map(pair => {
       const cells = pair.map(i => {
         const imgUrl = section[`imageUrl${i}`] || '';
         const lbl    = `디테일 ${i}`;
@@ -567,8 +572,10 @@ function renderSectionHTML(section) {
             ? _imgWithOverlay(imgUrl, lbl, clickA, dropA)
             : _imgPlaceholder(lbl, clickA, 220, dropA)}
         </div>`;
-      }).join('');
-      return `<div style="display:flex;gap:${gap}px;">${cells}</div>`;
+      });
+      // 마지막 행이 홀수면 빈 칸으로 채움
+      if (cells.length < 2) cells.push(`<div style="flex:1;min-width:0;"></div>`);
+      return `<div style="display:flex;gap:${gap}px;">${cells.join('')}</div>`;
     }).join(`<div style="height:${gap}px;"></div>`);
 
     return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;">

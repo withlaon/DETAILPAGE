@@ -697,7 +697,7 @@ function renderDetailViewProps(sec) {
       <input type="text" class="prop-input" value="${sec.title||'Detail View'}"
         oninput="updateSectionAndRender('${sec.id}','title',this.value)">
     </div>
-    ${mkUploadZone(1)}${mkUploadZone(2)}${mkUploadZone(3)}${mkUploadZone(4)}
+    ${mkUploadZone(1)}${mkUploadZone(2)}
     <div class="prop-section">
       <label class="prop-label">간격: <span id="dvGapVal">${sec.gap||6}</span>px</label>
       <input type="range" min="0" max="20" value="${sec.gap||6}"

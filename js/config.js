@@ -57,29 +57,36 @@ const TEMPLATES = [
 
       // ④-1 이미지 3장 — 3단 그리드 (상품이미지3)
       { id: 's4b', type: 'grid3',
+        label: '상품 이미지 3',
         imageUrl1: '', imageUrl2: '', imageUrl3: '',
-        label1: '상품 이미지 4', label2: '상품 이미지 5', label3: '상품 이미지 6',
-        bgColor: '#ffffff', gap: 4, padding: 0 },
+        label1: '이미지 1', label2: '이미지 2', label3: '이미지 3',
+        bgColor: '#ffffff', gap: 4, padding: 20 },
 
-      // ④-2 컬러 옵션 이미지 — Color Options
-      { id: 's4c', type: 'coloroption',
-        title: 'Color Options', cols: 4, gap: 12,
+      // ④-2 컬러 옵션 — 1장 / 2장 / 3장 (각 독립 섹션)
+      { id: 's4c1', type: 'coloroption',
+        title: 'Color Options', cols: 1, gap: 12,
+        imageUrl1:'', name1:'',
+        bgColor: '#faf8ff', paddingV: 36, paddingH: 24 },
+      { id: 's4c2', type: 'coloroption',
+        title: 'Color Options', cols: 2, gap: 12,
         imageUrl1:'', name1:'', imageUrl2:'', name2:'',
-        imageUrl3:'', name3:'', imageUrl4:'', name4:'',
-        imageUrl5:'', name5:'', imageUrl6:'', name6:'',
+        bgColor: '#faf8ff', paddingV: 36, paddingH: 24 },
+      { id: 's4c3', type: 'coloroption',
+        title: 'Color Options', cols: 3, gap: 12,
+        imageUrl1:'', name1:'', imageUrl2:'', name2:'', imageUrl3:'', name3:'',
         bgColor: '#faf8ff', paddingV: 36, paddingH: 24 },
 
-      // ④-3 디테일 컷 — Detail View
+      // ④-3 디테일 컷 — Detail View (2장)
       { id: 's4d', type: 'detailview',
-        title: 'Detail View', gap: 6,
-        imageUrl1:'', imageUrl2:'', imageUrl3:'', imageUrl4:'',
+        title: 'Detail View', count: 2, gap: 6,
+        imageUrl1:'', imageUrl2:'',
         bgColor: '#ffffff', paddingV: 20, paddingH: 20 },
 
-      // ⑤ 모델 핏 (Model Fit) — 3:4 비율 동적 슬롯
+      // ⑤ 모델 핏 (Model Fit) — 3:4 비율, 기본 1장
       { id: 's5', type: 'modelfit',
-        title: 'Model Fit', count: 2, perRow: 2, gap: 4,
+        title: 'Model Fit', count: 1, perRow: 2, gap: 4,
         bgColor: '#ffffff', paddingV: 16, paddingH: 0,
-        imageUrl1: '', imageUrl2: '' },
+        imageUrl1: '' },
 
       // 사이즈 정보
       { id: 's10', type: 'spacer', height: 8, bgColor: '#f5f5f5' },
@@ -89,10 +96,6 @@ const TEMPLATES = [
         m3Label: '높이', m3Value: '- cm', m4Label: '손잡이', m4Value: '- cm',
         weight: '- g', material: '-' },
       { id: 's12', type: 'spacer', height: 8, bgColor: '#f5f5f5' },
-      { id: 's13', type: 'text',
-        text: '[ 주문 및 배송 안내 ]\n\n• 주문 후 1~3 영업일 이내 발송됩니다.\n• 제주·도서산간 지역은 추가 배송비가 발생할 수 있습니다.\n\n[ 교환 및 반품 안내 ]\n\n• 수령 후 7일 이내 교환·반품 가능합니다.\n• 착용·세탁 후 교환·반품이 불가합니다.\n• 색상은 모니터 환경에 따라 다소 차이가 있을 수 있습니다.',
-        fontSize: 13, fontWeight: 'normal', color: '#888888', textAlign: 'left',
-        bgColor: '#f5f5f5', paddingV: 30, paddingH: 40 },
     ]
   },
   {
