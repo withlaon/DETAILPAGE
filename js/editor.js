@@ -197,9 +197,9 @@ function renderCanvas() {
       </div>` : ''}
     </div>`;
   }).join('') + `
-  <div id="dc-fixed-footer" style="padding:18px 20px 5px;text-align:center;background:#f5f0ff;">
+  <div id="dc-fixed-footer" style="padding:18px 20px 5px;text-align:center;background:#f9f6ff;">
     <p style="font-size:11px;color:#6d28d9;font-family:'Noto Sans KR',sans-serif;
-      margin:0;letter-spacing:0.28em;font-weight:600;text-transform:uppercase;">&#169; WITHLAON STUDIO</p>
+      margin:0;letter-spacing:0.28em;font-weight:800;text-transform:uppercase;">&#169; WITHLAON STUDIO</p>
   </div>`;
 }
 

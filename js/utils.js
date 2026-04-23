@@ -332,7 +332,7 @@ function renderSectionHTML(section) {
         background:linear-gradient(to bottom, transparent 0%, ${gradColor} ${gradStop}%, ${gradColor} 100%);
         padding:80px 24px 28px;text-align:left;">
         ${brandText ? `<p style="font-size:32px;color:${textColor};margin:0 0 8px;
-          font-weight:900;letter-spacing:0.03em;text-transform:uppercase;
+          font-weight:900;letter-spacing:0.03em;
           text-shadow:0 2px 8px rgba(0,0,0,0.25);
           font-family:'Noto Sans KR',sans-serif;line-height:1.15;">${brandText}</p>` : ''}
         ${subText ? `<p style="font-size:14px;color:${textColor};margin:0;
@@ -393,8 +393,8 @@ function renderSectionHTML(section) {
     const align    = section.textAlign || 'center';
     const isEmpty  = !rawSub;
 
-    const brandLabel = `<p style="font-size:10px;font-weight:700;color:#7c3aed;letter-spacing:0.18em;
-      margin:0 0 14px;font-family:'Noto Sans KR',sans-serif;text-transform:uppercase;
+    const brandLabel = `<p style="font-size:19px;font-weight:800;color:#7c3aed;letter-spacing:0.06em;
+      margin:0 0 14px;font-family:'Noto Sans KR',sans-serif;
       ${align==='center'?'text-align:center;':align==='right'?'text-align:right;':'text-align:left;'}">
       Brand Philosophy
     </p>`;
@@ -561,8 +561,8 @@ function renderSectionHTML(section) {
     }
 
     return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;">
-      <p style="font-size:13px;font-weight:700;color:#7c3aed;text-align:center;margin:0 0 20px;
-        letter-spacing:0.12em;font-family:'Noto Sans KR',sans-serif;">
+      <p style="font-size:19px;font-weight:800;color:#7c3aed;text-align:center;margin:0 0 20px;
+        letter-spacing:0.06em;font-family:'Noto Sans KR',sans-serif;">
         — ${title} —
       </p>
       ${rowsHtml}
@@ -610,8 +610,8 @@ function renderSectionHTML(section) {
     }).join('');
 
     return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;">
-      <p style="font-size:13px;font-weight:700;color:#7c3aed;text-align:center;margin:0 0 16px;
-        letter-spacing:0.12em;font-family:'Noto Sans KR',sans-serif;">
+      <p style="font-size:19px;font-weight:800;color:#7c3aed;text-align:center;margin:0 0 16px;
+        letter-spacing:0.06em;font-family:'Noto Sans KR',sans-serif;">
         — ${title} —
       </p>
       ${rowsHtml}
@@ -680,8 +680,8 @@ function renderSectionHTML(section) {
     }
 
     return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;">
-      <p style="font-size:13px;font-weight:700;color:#7c3aed;text-align:center;margin:0 0 16px;
-        letter-spacing:0.12em;font-family:'Noto Sans KR',sans-serif;">— ${title} —</p>
+      <p style="font-size:19px;font-weight:800;color:#7c3aed;text-align:center;margin:0 0 16px;
+        letter-spacing:0.06em;font-family:'Noto Sans KR',sans-serif;">— ${title} —</p>
       ${rowsHtml}
     </div>`;
   }
