@@ -3,7 +3,7 @@
 // =============================================
 const CONFIG = {
   SUPABASE_URL: 'https://avhjwqlajlcahxpdyzsw.supabase.co',
-  SUPABASE_ANON_KEY: localStorage.getItem('dc_supabase_key') || '',
+  SUPABASE_ANON_KEY: localStorage.getItem('dc_supabase_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2aGp3cWxhamxjYWh4cGR5enN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MDQ0MTcsImV4cCI6MjA5MjQ4MDQxN30.DsAM0xi5nVONiHA75Wuqo0BXPQKJqD91aY6AMJupKfs',
   OPENAI_API_KEY: localStorage.getItem('dc_openai_key') || '',
   STORAGE_BUCKET: 'detail-images',
   TABLE_NAME: 'detail_pages',
