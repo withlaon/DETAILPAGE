@@ -2,6 +2,9 @@
 // 에디터 페이지 메인 로직
 // =============================================
 
+// 에디터 모드 플래그 (utils.js의 renderSectionHTML이 직접 클릭 UI 활성화)
+window.DC_EDITOR = true;
+
 let pageData = {
   id: null,
   title: '',
@@ -148,16 +151,24 @@ function renderCanvas() {
   canvas.innerHTML = pageData.sections.map((sec, idx) => {
     const isSelected = sec.id === selectedSectionId;
     const inner = renderSectionHTML(sec);
+    const total = pageData.sections.length;
     return `
     <div class="section-overlay ${isSelected ? 'selected' : ''}" data-id="${sec.id}"
          onclick="selectSectionFromCanvas('${sec.id}')">
       ${inner}
       <div class="sec-controls">
-        ${idx > 0 ? `<button class="sec-btn bg-white shadow text-slate-600 hover:bg-slate-50" onclick="event.stopPropagation();moveSectionUp('${sec.id}')" title="위로">↑</button>` : ''}
-        ${idx < pageData.sections.length-1 ? `<button class="sec-btn bg-white shadow text-slate-600 hover:bg-slate-50" onclick="event.stopPropagation();moveSectionDown('${sec.id}')" title="아래로">↓</button>` : ''}
+        ${idx > 0 ? `<button class="sec-btn bg-white shadow text-slate-600 hover:bg-slate-50" onclick="event.stopPropagation();moveSectionUp('${sec.id}')" title="위로 이동">↑</button>` : ''}
+        ${idx < total-1 ? `<button class="sec-btn bg-white shadow text-slate-600 hover:bg-slate-50" onclick="event.stopPropagation();moveSectionDown('${sec.id}')" title="아래로 이동">↓</button>` : ''}
         <button class="sec-btn bg-white shadow text-slate-600 hover:bg-slate-50" onclick="event.stopPropagation();duplicateSection('${sec.id}')" title="복제">⧉</button>
         <button class="sec-btn bg-rose-50 shadow text-rose-500 hover:bg-rose-100" onclick="event.stopPropagation();deleteSection('${sec.id}')" title="삭제">✕</button>
       </div>
+      ${sec.type !== 'text' && sec.type !== 'spacer' ? `
+      <div style="position:absolute;bottom:6px;left:6px;z-index:15;pointer-events:none;">
+        <span style="background:rgba(0,0,0,0.55);color:#fff;font-size:10px;padding:2px 7px;
+          border-radius:4px;font-family:'Noto Sans KR',sans-serif;">
+          ${sec.type === 'grid2' ? '2단 그리드' : (sec.label || sec.type)}
+        </span>
+      </div>` : ''}
     </div>`;
   }).join('');
 }
@@ -463,18 +474,8 @@ function updateSection(id, key, value) {
 
 function updateSectionAndRender(id, key, value) {
   updateSection(id, key, value);
-  // 해당 섹션만 부분 업데이트
-  const overlayEl = document.querySelector(`#pageCanvas [data-id="${id}"]`);
-  if (overlayEl) {
-    const sec = pageData.sections.find(s => s.id === id);
-    const controls = overlayEl.querySelector('.sec-controls');
-    const controlsHTML = controls ? controls.outerHTML : '';
-    overlayEl.innerHTML = renderSectionHTML(sec) + controlsHTML;
-    if (!controls && overlayEl.classList.contains('selected')) {
-      // controls 재추가
-      renderCanvas();
-    }
-  }
+  // 전체 캔버스 재렌더 (컨트롤/라벨 배지 포함 일관성 유지)
+  renderCanvas();
 }
 
 // ── 텍스트 스타일 토글 ────────────────────────
@@ -628,6 +629,23 @@ function handleDrop(event, sectionId) {
   uploadTargetSectionId = sectionId;
   const fakeEvent = { target: { files: [file], value: '' } };
   handleImageUpload(fakeEvent);
+}
+
+// ── 캔버스 직접 클릭 업로드 (에디터 전용) ──────
+
+function editorUploadImage(sectionId) {
+  uploadTargetSectionId  = sectionId;
+  uploadGrid2SectionId   = null;
+  selectSection(sectionId);
+  document.getElementById('imageFileInput').click();
+}
+
+function editorUploadGrid2(sectionId, slot) {
+  uploadGrid2SectionId  = sectionId;
+  uploadGrid2Slot       = slot;
+  uploadTargetSectionId = null;
+  selectSection(sectionId);
+  document.getElementById('imageFileInput').click();
 }
 
 // ── grid2 이미지 업로드 ───────────────────────

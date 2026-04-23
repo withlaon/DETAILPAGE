@@ -45,13 +45,13 @@
     .section-overlay::after {
       content: ''; position: absolute; inset: 0;
       border: 2px solid transparent; pointer-events: none;
-      transition: border-color 0.15s; z-index: 10;
+      transition: border-color 0.15s; z-index: 11;
     }
-    .section-overlay:hover::after { border-color: rgba(79,70,229,0.3); }
-    .section-overlay.selected::after { border-color: #4f46e5; }
+    .section-overlay:hover::after { border-color: rgba(79,70,229,0.25); }
+    .section-overlay.selected::after { border-color: #4f46e5; box-shadow: inset 0 0 0 1px #4f46e5; }
     .section-overlay .sec-controls {
-      position: absolute; top: 4px; right: 4px; z-index: 20;
-      display: none; gap: 4px;
+      position: absolute; top: 6px; right: 6px; z-index: 20;
+      display: none; gap: 4px; flex-wrap: nowrap;
     }
     .section-overlay:hover .sec-controls,
     .section-overlay.selected .sec-controls { display: flex; }

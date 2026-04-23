@@ -198,41 +198,86 @@ function generateAITemplate(category, style = 'standard') {
 }
 
 // ── 섹션 렌더링 (공통) ─────────────────────────
+// window.DC_EDITOR = true 일 때 에디터 전용 UI (직접 클릭 업로드) 활성화
 
-function _imgPlaceholder(label) {
-  return `<div style="background:#f0f0f0;min-height:180px;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;color:#bbb;border:2px dashed #ddd;width:100%;">
-    <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-bottom:6px;opacity:0.5;">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-    </svg>
-    <span style="font-size:12px;">${label || '이미지 업로드'}</span>
+function _imgPlaceholder(label, clickAttr, minH) {
+  const h = minH || 260;
+  const cursor = clickAttr ? 'cursor:pointer;' : '';
+  return `<div ${clickAttr || ''} style="background:#f5f5f5;min-height:${h}px;display:flex;
+    flex-direction:column;align-items:center;justify-content:center;
+    color:#c0c0c0;border:2px dashed #e0e0e0;width:100%;${cursor}
+    transition:background 0.15s,border-color 0.15s;"
+    ${clickAttr ? `onmouseenter="this.style.background='#eef2ff';this.style.borderColor='#818cf8'"
+    onmouseleave="this.style.background='#f5f5f5';this.style.borderColor='#e0e0e0'"` : ''}>
+    <div style="width:48px;height:48px;border-radius:50%;background:#e8e8e8;display:flex;
+      align-items:center;justify-content:center;margin-bottom:10px;">
+      <svg width="24" height="24" fill="none" stroke="#aaa" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+          d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+    </div>
+    <span style="font-size:13px;font-weight:600;color:#999;">${label || '이미지 업로드'}</span>
+    ${clickAttr ? '<span style="font-size:11px;color:#b0b0b0;margin-top:4px;">클릭하여 이미지 선택</span>' : ''}
+  </div>`;
+}
+
+function _imgWithOverlay(src, alt, clickAttr) {
+  if (!clickAttr) {
+    return `<img src="${src}" style="width:100%;display:block;" alt="${alt||''}">`;
+  }
+  return `<div style="position:relative;line-height:0;">
+    <img src="${src}" style="width:100%;display:block;" alt="${alt||''}">
+    <div ${clickAttr}
+      style="position:absolute;inset:0;background:transparent;display:flex;align-items:center;
+        justify-content:center;cursor:pointer;transition:background 0.2s;"
+      onmouseenter="this.style.background='rgba(0,0,0,0.35)';this.querySelector('.chg-lbl').style.opacity='1'"
+      onmouseleave="this.style.background='transparent';this.querySelector('.chg-lbl').style.opacity='0'">
+      <div class="chg-lbl" style="opacity:0;transition:opacity 0.2s;background:rgba(0,0,0,0.7);
+        color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;
+        display:flex;align-items:center;gap:8px;pointer-events:none;">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        이미지 변경
+      </div>
+    </div>
   </div>`;
 }
 
 function renderSectionHTML(section) {
   const id = section.id;
+  const isEditor = window.DC_EDITOR === true;
 
   // ── 단일 이미지 ──────────────────────────────
   if (section.type === 'image') {
     const bg = section.bgColor || '#ffffff';
     const pad = section.padding || 0;
-    const inner = section.imageUrl
-      ? `<img src="${section.imageUrl}" style="width:100%;display:block;" alt="${section.label||''}">`
-      : _imgPlaceholder(section.label || '이미지를 업로드하세요');
+    const click = isEditor ? `onclick="event.stopPropagation();editorUploadImage('${id}')"` : '';
+    let inner;
+    if (section.imageUrl) {
+      inner = _imgWithOverlay(section.imageUrl, section.label, click);
+    } else {
+      inner = _imgPlaceholder(section.label || '이미지를 업로드하세요', click, 300);
+    }
     return `<div id="${id}" style="background:${bg};padding:${pad}px;">${inner}</div>`;
   }
 
   // ── 2단 그리드 이미지 ──────────────────────────
   if (section.type === 'grid2') {
-    const bg = section.bgColor || '#ffffff';
+    const bg  = section.bgColor || '#ffffff';
     const gap = section.gap !== undefined ? section.gap : 2;
-    const left = section.imageUrl1
-      ? `<img src="${section.imageUrl1}" style="width:100%;display:block;height:100%;object-fit:cover;" alt="${section.label1||''}">`
-      : _imgPlaceholder(section.label1 || '왼쪽 이미지');
+    const click1 = isEditor ? `onclick="event.stopPropagation();editorUploadGrid2('${id}',1)"` : '';
+    const click2 = isEditor ? `onclick="event.stopPropagation();editorUploadGrid2('${id}',2)"` : '';
+    const left  = section.imageUrl1
+      ? _imgWithOverlay(section.imageUrl1, section.label1, click1)
+      : _imgPlaceholder(section.label1 || '왼쪽 이미지', click1, 280);
     const right = section.imageUrl2
-      ? `<img src="${section.imageUrl2}" style="width:100%;display:block;height:100%;object-fit:cover;" alt="${section.label2||''}">`
-      : _imgPlaceholder(section.label2 || '오른쪽 이미지');
-    return `<div id="${id}" style="background:${bg};display:flex;gap:${gap}px;">
+      ? _imgWithOverlay(section.imageUrl2, section.label2, click2)
+      : _imgPlaceholder(section.label2 || '오른쪽 이미지', click2, 280);
+    return `<div id="${id}" style="background:${bg};display:flex;gap:${gap}px;align-items:stretch;">
       <div style="flex:1;min-width:0;">${left}</div>
       <div style="flex:1;min-width:0;">${right}</div>
     </div>`;
@@ -240,23 +285,24 @@ function renderSectionHTML(section) {
 
   // ── 텍스트 ───────────────────────────────────
   if (section.type === 'text') {
-    const bg = section.bgColor || '#ffffff';
-    const pv = section.paddingV || 20;
-    const ph = section.paddingH || 20;
+    const bg   = section.bgColor || '#ffffff';
+    const pv   = section.paddingV || 20;
+    const ph   = section.paddingH || 20;
     const size = section.fontSize || 16;
     const weight = section.fontWeight === 'bold' ? 'bold' : 'normal';
     const color = section.color || '#333333';
     const align = section.textAlign || 'center';
     const textContent = (section.text || '').replace(/\n/g, '<br>');
     return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;">
-      <p style="font-size:${size}px;font-weight:${weight};color:${color};text-align:${align};margin:0;line-height:1.8;white-space:pre-wrap;font-family:'Noto Sans KR',sans-serif;">${textContent}</p>
+      <p style="font-size:${size}px;font-weight:${weight};color:${color};text-align:${align};
+        margin:0;line-height:1.8;white-space:pre-wrap;font-family:'Noto Sans KR',sans-serif;">${textContent}</p>
     </div>`;
   }
 
   // ── 여백 ─────────────────────────────────────
   if (section.type === 'spacer') {
     const bg = section.bgColor || '#f5f5f5';
-    const h = section.height || 20;
+    const h  = section.height || 20;
     return `<div id="${id}" style="background:${bg};height:${h}px;"></div>`;
   }
 
