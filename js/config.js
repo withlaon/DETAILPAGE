@@ -225,7 +225,7 @@ const CATEGORY_SIZEINFO = {
 const CATEGORY_HERO_TEXT = {
   '가방': { brandText: 'Withlaon Daily Bag', subText: '일상에 특별함을 더하는 데일리 아이템' },
   '모자': { brandText: 'Withlaon Daily Hat', subText: '일상에 특별함을 더하는 데일리 아이템' },
-  '양산': { brandText: 'Withlaon Daily Hat', subText: '일상에 특별함을 더하는 데일리 아이템' },
+  '양산': { brandText: 'Withlaon Daily Parasol', subText: '일상에 특별함을 더하는 데일리 아이템' },
   '의류': { brandText: 'Withlaon Daily Wear', subText: '일상에 특별함을 더하는 데일리 아이템' },
 };
 
