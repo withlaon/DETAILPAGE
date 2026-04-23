@@ -7,36 +7,9 @@
 async function downloadAsJpeg(canvasEl, filename = '상세페이지') {
   showToast('JPEG 파일 생성 중...', 'info');
 
-  // 좌우·하단 여백 임시 제거 + 푸터 여백 조정
-  const modified = [];
+  // 레이아웃 안정화 후 캡처 (미리보기와 완전 동일)
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-  // 1) 각 섹션 루트 div: paddingLeft/Right/Bottom을 0으로
-  canvasEl.querySelectorAll('.section-overlay > div[id]').forEach(el => {
-    const cs = window.getComputedStyle(el);
-    const pl = parseFloat(cs.paddingLeft)   || 0;
-    const pr = parseFloat(cs.paddingRight)  || 0;
-    const pb = parseFloat(cs.paddingBottom) || 0;
-    if (pl > 0 || pr > 0 || pb > 0) {
-      const origStyle = el.getAttribute('style') || '';
-      el.style.paddingLeft   = '0px';
-      el.style.paddingRight  = '0px';
-      el.style.paddingBottom = '0px';
-      modified.push({ el, origStyle });
-    }
-  });
-
-  // 2) 푸터: 상단 여백(hero paddingTop=16)과 동일하게 16px, 좌우·하단 0
-  const footer = canvasEl.querySelector('#dc-fixed-footer');
-  let origFooterStyle = '';
-  if (footer) {
-    origFooterStyle = footer.getAttribute('style') || '';
-    footer.style.paddingTop    = '16px';
-    footer.style.paddingBottom = '16px';
-    footer.style.paddingLeft   = '0px';
-    footer.style.paddingRight  = '0px';
-  }
-
-  await new Promise(r => requestAnimationFrame(r));
   const W = canvasEl.scrollWidth;
   const H = canvasEl.scrollHeight;
 
@@ -64,12 +37,6 @@ async function downloadAsJpeg(canvasEl, filename = '상세페이지') {
     console.error('다운로드 오류:', e);
     showToast('다운로드 실패. 이미지 CORS 설정을 확인하세요.', 'error');
     throw e;
-  } finally {
-    // 여백 원복
-    modified.forEach(({ el, origStyle }) => {
-      el.setAttribute('style', origStyle);
-    });
-    if (footer) footer.setAttribute('style', origFooterStyle);
   }
 }
 
@@ -366,26 +333,7 @@ function renderSectionHTML(section) {
         onmouseleave="this.style.background='transparent'">
       </div>` : '';
 
-    // 에디터 변경 버튼 (이미지 있을 때만, z-index:5)
-    const changeBtn = (isEditor && section.imageUrl) ? `
-      <button onclick="event.stopPropagation();${uploadFn}"
-        style="position:absolute;top:10px;right:10px;z-index:5;
-          background:rgba(0,0,0,0.55);color:#fff;border:none;
-          padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;
-          font-family:'Noto Sans KR',sans-serif;display:flex;align-items:center;gap:5px;
-          transition:background 0.2s;"
-        onmouseenter="this.style.background='rgba(79,70,229,0.85)'"
-        onmouseleave="this.style.background='rgba(0,0,0,0.55)'">
-        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86
-            a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2
-            H5a2 2 0 01-2-2V9z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-        </svg>
-        이미지 변경
-      </button>` : '';
+    const changeBtn = '';
 
     return `<div id="${id}" style="background:${bg};padding:${pad}px;">
       <div style="position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:${radius}px;">
@@ -791,13 +739,6 @@ function renderSectionHTML(section) {
     if (imgUrl) {
       imgEl = `<div ${clickA} ${dropA} style="position:relative;${isEditor?'cursor:pointer;':''}">
         <img src="${imgUrl}" style="width:100%;display:block;border-radius:10px;object-fit:contain;">
-        ${isEditor ? `<div style="position:absolute;inset:0;background:transparent;border-radius:10px;
-          display:flex;align-items:center;justify-content:center;transition:background 0.2s;"
-          onmouseenter="this.style.background='rgba(124,58,237,0.18)'"
-          onmouseleave="this.style.background='transparent'">
-          <span style="color:#fff;font-size:12px;font-weight:600;background:rgba(0,0,0,0.5);
-            padding:6px 14px;border-radius:8px;pointer-events:none;">이미지 변경</span>
-        </div>` : ''}
       </div>`;
     } else {
       imgEl = `<div ${clickA} ${dropA} style="min-height:220px;background:#e4dff8;border:2px dashed #c0b4f0;

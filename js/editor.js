@@ -1560,13 +1560,11 @@ async function savePageDB(data) {
 async function downloadJpeg() {
   const canvas = document.getElementById('pageCanvas');
   const title = document.getElementById('pageTitle').value.trim() || '상세페이지';
-  // 선택 해제 + 테두리 숨김
+  // 선택 해제 + 에디터 전용 테두리 숨김 (미리보기 콘텐츠에는 영향 없음)
   const prevSelected = selectedSectionId;
   selectedSectionId = null;
   document.querySelectorAll('#pageCanvas .section-overlay').forEach(el => el.classList.remove('selected'));
   canvas.classList.add('dc-exporting');
-  // DOM 업데이트 후 캡처
-  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
   await downloadAsJpeg(canvas, title);
   // 복원
   canvas.classList.remove('dc-exporting');
