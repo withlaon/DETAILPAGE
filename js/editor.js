@@ -880,6 +880,97 @@ function renderModelFitProps(sec) {
 // ── 속성 패널: 사이즈 정보 ─────────────────────
 function renderSizeInfoProps(sec) {
   const panel = document.getElementById('propPanel');
+  const isTable = sec.variant === 'table';
+  const colCount = sec.colCount || 3;
+  const rowCount = sec.rowCount || 1;
+
+  const commonFooter = `
+    <div class="prop-section">
+      <label class="prop-label">무게 (WEIGHT)</label>
+      <input type="text" class="prop-input" placeholder="예) 약 58 g" value="${sec.weight||''}"
+        oninput="updateSectionAndRender('${sec.id}','weight',this.value)">
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">소재 (MATERIAL)</label>
+      <input type="text" class="prop-input" placeholder="예) 면, 캔버스" value="${sec.material||''}"
+        oninput="updateSectionAndRender('${sec.id}','material',this.value)">
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">배경 색상</label>
+      <div class="flex items-center gap-2">
+        <input type="color" value="${sec.bgColor||'#ffffff'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+          oninput="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+        <input type="text" class="prop-input" value="${sec.bgColor||'#ffffff'}"
+          onchange="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+      </div>
+    </div>
+    <div class="prop-section flex gap-2">
+      <button onclick="moveSectionUp('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↑ 위로</button>
+      <button onclick="moveSectionDown('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↓ 아래로</button>
+      <button onclick="duplicateSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-indigo-600 hover:bg-indigo-50 border border-indigo-200 rounded-lg">복제</button>
+      <button onclick="deleteSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg">삭제</button>
+    </div>`;
+
+  // 테이블 variant 속성 패널
+  if (isTable) {
+    // 컬럼 헤더 입력
+    let colInputs = '';
+    for (let c = 1; c <= colCount; c++) {
+      colInputs += `<input type="text" class="prop-input mb-1" placeholder="항목${c}" value="${sec[`col${c}`]||''}"
+        oninput="updateSectionAndRender('${sec.id}','col${c}',this.value)">`;
+    }
+    // 행 데이터 입력
+    let rowInputs = '';
+    for (let r = 1; r <= rowCount; r++) {
+      let valInputs = '';
+      for (let c = 1; c <= colCount; c++) {
+        valInputs += `<input type="text" class="prop-input" style="flex:1;min-width:0;" placeholder="값" value="${sec[`row${r}v${c}`]||''}"
+          oninput="updateSectionAndRender('${sec.id}','row${r}v${c}',this.value)">`;
+      }
+      rowInputs += `
+        <div class="mb-3 border border-slate-100 rounded-lg p-2">
+          <label class="prop-label">행 ${r} — 사이즈명</label>
+          <input type="text" class="prop-input mb-2" placeholder="예) FREE, S, M, L" value="${sec[`row${r}size`]||''}"
+            oninput="updateSectionAndRender('${sec.id}','row${r}size',this.value)">
+          <label class="prop-label">값 (컬럼 순서대로)</label>
+          <div class="flex gap-1">${valInputs}</div>
+        </div>`;
+    }
+
+    panel.innerHTML = `
+      <div class="px-4 py-3 bg-indigo-50 border-b border-indigo-100">
+        <span class="text-sm font-bold text-indigo-800">사이즈 정보 (테이블형)</span>
+      </div>
+      <div class="prop-section">
+        <label class="prop-label">안내 문구</label>
+        <input type="text" class="prop-input" placeholder="측정 방법에 따라 1-2CM 오차가 있을 수 있습니다." value="${sec.note||''}"
+          oninput="updateSectionAndRender('${sec.id}','note',this.value)">
+      </div>
+      <div class="prop-section">
+        <label class="prop-label">컬럼 헤더 (${colCount}개)</label>
+        ${colInputs}
+        <div class="flex gap-2 mt-1">
+          <button onclick="updateSectionAndRender('${sec.id}','colCount',${Math.max(1,colCount-1)});renderPropPanel()"
+            class="flex-1 py-1 text-xs border border-slate-200 rounded text-slate-600 hover:bg-slate-50">− 컬럼</button>
+          <button onclick="updateSectionAndRender('${sec.id}','colCount',${colCount+1});renderPropPanel()"
+            class="flex-1 py-1 text-xs border border-slate-200 rounded text-slate-600 hover:bg-slate-50">+ 컬럼</button>
+        </div>
+      </div>
+      <div class="prop-section">
+        <label class="prop-label">행 데이터</label>
+        ${rowInputs}
+        <div class="flex gap-2 mt-1">
+          <button onclick="updateSectionAndRender('${sec.id}','rowCount',${Math.max(1,rowCount-1)});renderPropPanel()"
+            class="flex-1 py-1 text-xs border border-slate-200 rounded text-slate-600 hover:bg-slate-50">− 행</button>
+          <button onclick="updateSectionAndRender('${sec.id}','rowCount',${rowCount+1});renderPropPanel()"
+            class="flex-1 py-1 text-xs border border-slate-200 rounded text-slate-600 hover:bg-slate-50">+ 행</button>
+        </div>
+      </div>
+      ${commonFooter}`;
+    return;
+  }
+
+  // 카드 variant 속성 패널 (기존)
   const mkMRow = (idx, label, value) => `
     <div class="flex gap-2 mb-2">
       <input type="text" class="prop-input" style="width:40%;" placeholder="항목명" value="${label}"
@@ -890,7 +981,7 @@ function renderSizeInfoProps(sec) {
 
   panel.innerHTML = `
     <div class="px-4 py-3 bg-indigo-50 border-b border-indigo-100">
-      <span class="text-sm font-bold text-indigo-800">사이즈 정보 섹션</span>
+      <span class="text-sm font-bold text-indigo-800">사이즈 정보 (카드형)</span>
     </div>
     <div class="prop-section">
       <label class="prop-label">제목</label>
@@ -914,31 +1005,7 @@ function renderSizeInfoProps(sec) {
       ${mkMRow(3, sec.m3Label||'높이',   sec.m3Value||'- cm')}
       ${mkMRow(4, sec.m4Label||'손잡이', sec.m4Value||'- cm')}
     </div>
-    <div class="prop-section">
-      <label class="prop-label">무게 (WEIGHT)</label>
-      <input type="text" class="prop-input" placeholder="예) 238 g" value="${sec.weight||''}"
-        oninput="updateSectionAndRender('${sec.id}','weight',this.value)">
-    </div>
-    <div class="prop-section">
-      <label class="prop-label">소재 (MATERIAL)</label>
-      <input type="text" class="prop-input" placeholder="예) 캔버스" value="${sec.material||''}"
-        oninput="updateSectionAndRender('${sec.id}','material',this.value)">
-    </div>
-    <div class="prop-section">
-      <label class="prop-label">배경 색상</label>
-      <div class="flex items-center gap-2">
-        <input type="color" value="${sec.bgColor||'#f0eeff'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
-          oninput="updateSectionAndRender('${sec.id}','bgColor',this.value)">
-        <input type="text" class="prop-input" value="${sec.bgColor||'#f0eeff'}"
-          onchange="updateSectionAndRender('${sec.id}','bgColor',this.value)">
-      </div>
-    </div>
-    <div class="prop-section flex gap-2">
-      <button onclick="moveSectionUp('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↑ 위로</button>
-      <button onclick="moveSectionDown('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↓ 아래로</button>
-      <button onclick="duplicateSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-indigo-600 hover:bg-indigo-50 border border-indigo-200 rounded-lg">복제</button>
-      <button onclick="deleteSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg">삭제</button>
-    </div>`;
+    ${commonFooter}`;
 }
 
 function renderTextProps(sec) {

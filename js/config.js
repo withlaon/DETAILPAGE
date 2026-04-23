@@ -187,6 +187,36 @@ const TEMPLATES = [
   }
 ];
 
+// 카테고리별 사이즈 정보 섹션 기본값
+const CATEGORY_SIZEINFO = {
+  '모자': {
+    variant: 'table',
+    title: 'Size Information',
+    note: '측정 방법에 따라 1-2CM 오차가 있을 수 있습니다.',
+    bgColor: '#ffffff',
+    padding: 32,
+    colCount: 3,
+    col1: '챙길이', col2: '높이', col3: '둘레',
+    rowCount: 1,
+    row1size: 'FREE', row1v1: '13', row1v2: '14', row1v3: '53~65',
+    weight: '약 58 g',
+    material: '면',
+  },
+  '양산': {
+    variant: 'table',
+    title: 'Size Information',
+    note: '측정 방법에 따라 1-2CM 오차가 있을 수 있습니다.',
+    bgColor: '#ffffff',
+    padding: 32,
+    colCount: 3,
+    col1: '길이', col2: '지름', col3: '무게',
+    rowCount: 1,
+    row1size: 'FREE', row1v1: '-', row1v2: '-', row1v3: '-',
+    weight: '- g',
+    material: '-',
+  },
+};
+
 // 카테고리별 대표컷 기본 텍스트
 const CATEGORY_HERO_TEXT = {
   '가방': { brandText: 'Withlaon Daily Bag', subText: '일상에 특별함을 더하는 데일리 아이템' },

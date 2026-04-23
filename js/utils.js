@@ -688,9 +688,74 @@ function renderSectionHTML(section) {
 
   // ── 사이즈 정보 (Size Information) ────────────
   if (section.type === 'sizeinfo') {
-    const bg  = section.bgColor || '#f0eeff';
+    const bg  = section.bgColor || '#ffffff';
     const pad = section.padding !== undefined ? section.padding : 24;
     const title = section.title || 'SIZE INFORMATION';
+    const weight   = section.weight   || '- g';
+    const material = section.material || '-';
+
+    // ── 테이블 variant (모자 등 단순 사이즈표) ──────
+    if (section.variant === 'table') {
+      const note = section.note || '';
+      const colCount = section.colCount || 3;
+      const rowCount = section.rowCount || 1;
+      const cols = [];
+      for (let c = 1; c <= colCount; c++) cols.push(section[`col${c}`] || `항목${c}`);
+      const rowsData = [];
+      for (let r = 1; r <= rowCount; r++) {
+        const sz = section[`row${r}size`] || '-';
+        const vals = [];
+        for (let c = 1; c <= colCount; c++) vals.push(section[`row${r}v${c}`] || '-');
+        rowsData.push({ size: sz, values: vals });
+      }
+
+      const colHeaders = cols.map(c =>
+        `<div style="flex:1;font-size:14px;font-weight:600;color:#444;text-align:center;
+          font-family:'Noto Sans KR',sans-serif;">${c}</div>`).join('');
+
+      const dataRows = rowsData.map(row => {
+        const vals = row.values.map(v =>
+          `<div style="flex:1;font-size:14px;color:#666;text-align:center;
+            font-family:'Noto Sans KR',sans-serif;">${v}</div>`).join('');
+        return `<div style="display:flex;align-items:center;padding:14px 0;border-bottom:1px solid #f0f0f0;">
+          <div style="flex:1.3;font-size:14px;font-weight:800;color:#1a1a1a;
+            font-family:'Noto Sans KR',sans-serif;">${row.size}</div>
+          ${vals}
+        </div>`;
+      }).join('');
+
+      return `<div id="${id}" style="background:${bg};padding:${pad}px;">
+        <p style="font-size:26px;font-weight:800;color:#1a1a1a;text-align:center;margin:0 0 8px;
+          font-family:'Noto Sans KR',sans-serif;">Size Information</p>
+        ${note ? `<p style="font-size:12px;color:#aaa;text-align:center;margin:0 0 24px;
+          font-family:'Noto Sans KR',sans-serif;">${note}</p>` : ''}
+        <div style="margin-bottom:4px;">
+          <div style="display:flex;align-items:center;padding:10px 0;">
+            <div style="flex:1.3;font-size:13px;font-weight:800;color:#1a1a1a;
+              letter-spacing:0.04em;font-family:'Noto Sans KR',sans-serif;">SIZE (CM)</div>
+            ${colHeaders}
+          </div>
+          <div style="height:2px;background:#6d28d9;margin-bottom:4px;"></div>
+          ${dataRows}
+        </div>
+        <div style="display:flex;gap:48px;margin-top:20px;">
+          <div>
+            <p style="font-size:10px;font-weight:700;color:#9f7acd;letter-spacing:0.1em;margin:0 0 4px;
+              font-family:'Noto Sans KR',sans-serif;text-transform:uppercase;">재질 (Material)</p>
+            <p style="font-size:15px;font-weight:700;color:#1a1a1a;margin:0;
+              font-family:'Noto Sans KR',sans-serif;">${material}</p>
+          </div>
+          <div>
+            <p style="font-size:10px;font-weight:700;color:#9f7acd;letter-spacing:0.1em;margin:0 0 4px;
+              font-family:'Noto Sans KR',sans-serif;text-transform:uppercase;">Weight</p>
+            <p style="font-size:15px;font-weight:700;color:#1a1a1a;margin:0;
+              font-family:'Noto Sans KR',sans-serif;">${weight}</p>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // ── 카드 variant (가방 등 이미지+치수표) ──────────
     const imgUrl = section.imageUrl || '';
     const mRows = [
       { label: section.m1Label || '가로',   value: section.m1Value || '- cm' },
@@ -698,8 +763,6 @@ function renderSectionHTML(section) {
       { label: section.m3Label || '높이',   value: section.m3Value || '- cm' },
       { label: section.m4Label || '손잡이', value: section.m4Value || '- cm' },
     ];
-    const weight   = section.weight   || '- g';
-    const material = section.material || '-';
 
     const clickA = isEditor ? `onclick="event.stopPropagation();triggerImageUpload('${id}')"` : '';
     const dropA  = isEditor

@@ -317,6 +317,16 @@ function createNewPage() {
     });
   }
 
+  // 카테고리별 사이즈 정보 섹션 자동 적용
+  const sizeOverride = CATEGORY_SIZEINFO[category];
+  if (sizeOverride) {
+    sections.forEach(s => {
+      if (s.type === 'sizeinfo') {
+        Object.assign(s, sizeOverride);
+      }
+    });
+  }
+
   const newPage = { title, category, sections };
   sessionStorage.setItem('dc_new_page', JSON.stringify(newPage));
   window.location.href = 'editor.html?mode=new';
