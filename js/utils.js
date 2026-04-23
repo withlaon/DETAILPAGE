@@ -7,10 +7,12 @@
 async function downloadAsJpeg(canvasEl, filename = '상세페이지') {
   showToast('JPEG 파일 생성 중...', 'info');
 
-  // 레이아웃 안정화 후 캡처 (미리보기와 완전 동일)
+  // 레이아웃 안정화
   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-  const W = canvasEl.scrollWidth;
+  // offsetWidth: box-shadow 등을 제외한 실제 콘텐츠 너비(860px)
+  // scrollHeight: 전체 스크롤 높이(모든 섹션 포함)
+  const W = canvasEl.offsetWidth;
   const H = canvasEl.scrollHeight;
 
   const opt = {
@@ -21,18 +23,27 @@ async function downloadAsJpeg(canvasEl, filename = '상세페이지') {
     logging: false,
     width: W,
     height: H,
-    windowWidth: W,
-    windowHeight: H,
+    // 실제 브라우저 윈도우 크기를 그대로 사용 — 레이아웃이 미리보기와 동일하게 렌더링됨
+    windowWidth: document.documentElement.clientWidth,
+    windowHeight: document.documentElement.clientHeight,
   };
 
   try {
     const img = await html2canvas(canvasEl, opt);
+
+    // 캡처된 캔버스를 정확히 W×H 크기로 잘라내어 여분의 여백 제거
+    const out = document.createElement('canvas');
+    out.width  = W * 2;   // scale=2 이므로 2배
+    out.height = H * 2;
+    const ctx = out.getContext('2d');
+    ctx.drawImage(img, 0, 0, W * 2, H * 2, 0, 0, W * 2, H * 2);
+
     const link = document.createElement('a');
     link.download = `${filename}_${formatDate(new Date())}.jpg`;
-    link.href = img.toDataURL('image/jpeg', 0.92);
+    link.href = out.toDataURL('image/jpeg', 0.92);
     link.click();
     showToast('다운로드 완료!', 'success');
-    return img;
+    return out;
   } catch (e) {
     console.error('다운로드 오류:', e);
     showToast('다운로드 실패. 이미지 CORS 설정을 확인하세요.', 'error');
