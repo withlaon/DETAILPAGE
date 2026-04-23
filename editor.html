@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>에디터 — DetailCraft</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Noto Sans KR', sans-serif; box-sizing: border-box; }
+    body { overflow: hidden; }
+    .editor-layout { height: 100vh; display: flex; flex-direction: column; }
+    .editor-body { flex: 1; display: flex; overflow: hidden; }
+
+    /* 왼쪽 패널 */
+    #leftPanel { width: 220px; min-width: 220px; border-right: 1px solid #e2e8f0;
+      background: #f8fafc; display: flex; flex-direction: column; overflow: hidden; }
+    #sectionList { flex: 1; overflow-y: auto; padding: 8px; }
+
+    /* 가운데 캔버스 */
+    #centerPanel { flex: 1; overflow-y: auto; background: #e2e8f0;
+      display: flex; flex-direction: column; align-items: center; padding: 24px; }
+    #pageCanvas { width: 860px; min-width: 860px; background: #fff;
+      box-shadow: 0 4px 40px rgba(0,0,0,0.15); position: relative; }
+
+    /* 오른쪽 패널 */
+    #rightPanel { width: 280px; min-width: 280px; border-left: 1px solid #e2e8f0;
+      background: #fff; overflow-y: auto; }
+
+    /* 섹션 아이템 */
+    .section-item { border-radius: 10px; padding: 8px 10px; margin-bottom: 4px;
+      cursor: pointer; border: 2px solid transparent; transition: all 0.15s;
+      background: #fff; display: flex; align-items: center; gap-8px; }
+    .section-item:hover { border-color: #c7d2fe; background: #eef2ff; }
+    .section-item.active { border-color: #4f46e5; background: #eef2ff; }
+    .section-item .drag-handle { cursor: grab; color: #94a3b8; flex-shrink: 0; }
+    .section-item .drag-handle:active { cursor: grabbing; }
+
+    /* 캔버스 섹션 오버레이 */
+    .section-overlay { position: relative; }
+    .section-overlay::after {
+      content: ''; position: absolute; inset: 0;
+      border: 2px solid transparent; pointer-events: none;
+      transition: border-color 0.15s; z-index: 10;
+    }
+    .section-overlay:hover::after { border-color: rgba(79,70,229,0.3); }
+    .section-overlay.selected::after { border-color: #4f46e5; }
+    .section-overlay .sec-controls {
+      position: absolute; top: 4px; right: 4px; z-index: 20;
+      display: none; gap: 4px;
+    }
+    .section-overlay:hover .sec-controls,
+    .section-overlay.selected .sec-controls { display: flex; }
+    .sec-btn {
+      width: 28px; height: 28px; border-radius: 6px; border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 12px; transition: all 0.15s;
+    }
+
+    /* 속성 패널 */
+    .prop-label { font-size: 11px; font-weight: 600; color: #64748b;
+      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; display: block; }
+    .prop-input { width: 100%; padding: 8px 10px; border: 1px solid #e2e8f0;
+      border-radius: 8px; font-size: 13px; color: #1e293b;
+      transition: border-color 0.15s; outline: none; font-family: inherit; }
+    .prop-input:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+    .prop-section { padding: 16px; border-bottom: 1px solid #f1f5f9; }
+
+    /* 스크롤바 */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+    /* 업로드 드롭존 */
+    .upload-zone { border: 2px dashed #c7d2fe; border-radius: 10px;
+      padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s;
+      background: #f8faff; }
+    .upload-zone:hover, .upload-zone.dragover { border-color: #4f46e5; background: #eef2ff; }
+
+    /* 범위 슬라이더 */
+    input[type=range] { -webkit-appearance: none; width: 100%; height: 4px;
+      background: #e2e8f0; border-radius: 2px; outline: none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none;
+      width: 16px; height: 16px; border-radius: 50%; background: #4f46e5; cursor: pointer; }
+
+    /* 토글 */
+    .toggle-btn { padding: 6px 12px; border-radius: 8px; font-size: 12px;
+      font-weight: 600; cursor: pointer; border: 1.5px solid #e2e8f0;
+      background: #fff; color: #64748b; transition: all 0.15s; }
+    .toggle-btn.active { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+
+    /* 저장 상태 */
+    #saveStatus { transition: all 0.3s; }
+
+    .modal-backdrop { backdrop-filter: blur(4px); }
+
+    @media (max-width: 1024px) {
+      #leftPanel { width: 180px; min-width: 180px; }
+      #rightPanel { width: 240px; min-width: 240px; }
+      #pageCanvas { width: 600px; min-width: 600px; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50">
+<div class="editor-layout">
+
+  <!-- ===== 상단 툴바 ===== -->
+  <header class="bg-white border-b border-slate-200 flex items-center gap-3 px-4 h-14 shrink-0 z-30">
+    <a href="index.html" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="대시보드로 돌아가기">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+    </a>
+    <div class="w-px h-6 bg-slate-200"></div>
+    <input id="pageTitle" type="text" placeholder="상세페이지 제목 입력" maxlength="60"
+      class="text-sm font-semibold text-slate-800 placeholder-slate-400 border-0 outline-none bg-transparent w-56">
+    <select id="pageCategorySelect" class="text-xs px-2.5 py-1.5 border border-slate-200 rounded-lg text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+      <option value="가방">가방</option>
+      <option value="모자">모자</option>
+      <option value="의류">의류</option>
+      <option value="양산">양산</option>
+    </select>
+
+    <div class="flex-1"></div>
+
+    <!-- 섹션 추가 버튼 -->
+    <div class="flex items-center gap-1.5">
+      <button onclick="addSection('image')" title="이미지 섹션 추가" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 rounded-lg transition-colors">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        이미지
+      </button>
+      <button onclick="addSection('text')" title="텍스트 섹션 추가" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 rounded-lg transition-colors">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        텍스트
+      </button>
+      <button onclick="addSection('spacer')" title="여백 섹션 추가" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 rounded-lg transition-colors">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        여백
+      </button>
+    </div>
+
+    <div class="w-px h-6 bg-slate-200"></div>
+
+    <!-- 상태 표시 -->
+    <div id="saveStatus" class="text-xs text-slate-400 flex items-center gap-1.5 min-w-[80px]">
+      <span id="saveStatusText">미저장</span>
+    </div>
+
+    <button onclick="savePage()" class="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-md shadow-indigo-200">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+      </svg>
+      저장
+    </button>
+    <button onclick="downloadJpeg()" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+      </svg>
+      JPEG 저장
+    </button>
+  </header>
+
+  <div class="editor-body">
+
+    <!-- ===== 왼쪽: 섹션 목록 ===== -->
+    <div id="leftPanel">
+      <div class="px-3 py-2.5 border-b border-slate-200 bg-white flex items-center justify-between">
+        <span class="text-xs font-bold text-slate-600 uppercase tracking-wide">섹션 목록</span>
+        <span id="sectionCountBadge" class="text-xs bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-semibold">0</span>
+      </div>
+      <div id="sectionList" class="p-2">
+        <!-- JS로 채워짐 -->
+      </div>
+    </div>
+
+    <!-- ===== 가운데: 캔버스 ===== -->
+    <div id="centerPanel">
+      <div class="mb-3 flex items-center gap-3 text-xs text-slate-400">
+        <span>너비 860px</span>
+        <span>·</span>
+        <span id="sectionCountInfo">0개 섹션</span>
+        <span>·</span>
+        <span>클릭하여 섹션 편집</span>
+      </div>
+      <div id="pageCanvas">
+        <!-- 섹션들이 렌더링됨 -->
+      </div>
+    </div>
+
+    <!-- ===== 오른쪽: 속성 패널 ===== -->
+    <div id="rightPanel">
+      <div id="propEmpty" class="p-6 text-center">
+        <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+          </svg>
+        </div>
+        <p class="text-sm text-slate-400">섹션을 클릭하면<br>속성을 편집할 수 있습니다</p>
+      </div>
+      <div id="propPanel" class="hidden">
+        <!-- JS로 채워짐 -->
+      </div>
+    </div>
+
+  </div><!-- editor-body -->
+</div><!-- editor-layout -->
+
+<!-- ===== 이미지 업로드 숨겨진 input ===== -->
+<input type="file" id="imageFileInput" accept="image/*" class="hidden">
+
+<!-- ===== AI 템플릿 생성 모달 ===== -->
+<div id="aiModal" class="fixed inset-0 z-50 hidden">
+  <div class="modal-backdrop absolute inset-0 bg-slate-900/60"></div>
+  <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+      <div class="border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+        <h3 class="font-bold text-slate-900">AI 템플릿 생성</h3>
+        <button onclick="document.getElementById('aiModal').classList.add('hidden')" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="p-6 space-y-4">
+        <p class="text-sm text-slate-500">현재 작업 중인 페이지를 AI가 생성한 템플릿으로 교체합니다.</p>
+        <div>
+          <label class="prop-label">스타일 선택</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button class="ai-regen-btn border-2 rounded-xl p-3 text-left transition-all border-indigo-500 bg-indigo-50" data-style="standard">
+              <div class="font-semibold text-sm text-slate-800">스탠다드</div>
+              <div class="text-xs text-slate-500">깔끔하고 범용적</div>
+            </button>
+            <button class="ai-regen-btn border-2 rounded-xl p-3 text-left transition-all border-slate-200" data-style="warm">
+              <div class="font-semibold text-sm text-slate-800">웜톤</div>
+              <div class="text-xs text-slate-500">따뜻한 베이지 계열</div>
+            </button>
+            <button class="ai-regen-btn border-2 rounded-xl p-3 text-left transition-all border-slate-200" data-style="cool">
+              <div class="font-semibold text-sm text-slate-800">쿨톤</div>
+              <div class="text-xs text-slate-500">세련된 블루 계열</div>
+            </button>
+            <button class="ai-regen-btn border-2 rounded-xl p-3 text-left transition-all border-slate-200" data-style="dark">
+              <div class="font-semibold text-sm text-slate-800">다크</div>
+              <div class="text-xs text-slate-500">고급스러운 다크 테마</div>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-slate-100 flex gap-3 justify-end">
+        <button onclick="document.getElementById('aiModal').classList.add('hidden')" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-xl">취소</button>
+        <button onclick="applyAITemplate()" class="px-4 py-2 text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:opacity-90">적용</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/editor.js"></script>
+</body>
+</html>
