@@ -75,32 +75,19 @@ const TEMPLATES = [
         imageUrl1:'', imageUrl2:'', imageUrl3:'', imageUrl4:'',
         bgColor: '#ffffff', paddingV: 20, paddingH: 20 },
 
-      // ⑤ 이미지 1장
-      { id: 's5', type: 'image',
-        imageUrl: '', bgColor: '#ffffff', padding: 20, label: '모델 착용샷 1' },
+      // ⑤ 모델 핏 (Model Fit) — 3:4 비율 동적 슬롯
+      { id: 's5', type: 'modelfit',
+        title: 'Model Fit', count: 2, perRow: 2, gap: 4,
+        bgColor: '#ffffff', paddingV: 16, paddingH: 0,
+        imageUrl1: '', imageUrl2: '' },
 
-      // ⑥ 이미지 2장
-      { id: 's6', type: 'grid2',
-        imageUrl1: '', imageUrl2: '', bgColor: '#ffffff', gap: 8, padding: 20,
-        label1: '모델 착용샷 2', label2: '모델 착용샷 3' },
-
-      // ⑦ 이미지 1장
-      { id: 's7', type: 'image',
-        imageUrl: '', bgColor: '#ffffff', padding: 20, label: '모델 착용샷 4' },
-
-      // ⑧ 이미지 2장
-      { id: 's8', type: 'grid2',
-        imageUrl1: '', imageUrl2: '', bgColor: '#ffffff', gap: 8, padding: 20,
-        label1: '디테일 클로즈업 1', label2: '디테일 클로즈업 2' },
-
-      // ⑨ 이미지 1장
-      { id: 's9', type: 'image',
-        imageUrl: '', bgColor: '#ffffff', padding: 20, label: '상품 내부/기능 컷' },
-
-      // 사이즈 & 배송
+      // 사이즈 정보
       { id: 's10', type: 'spacer', height: 8, bgColor: '#f5f5f5' },
-      { id: 's11', type: 'image',
-        imageUrl: '', bgColor: '#f5f5f5', padding: 20, label: '사이즈 정보 이미지' },
+      { id: 's11', type: 'sizeinfo',
+        title: 'SIZE INFORMATION', imageUrl: '', bgColor: '#f0eeff', padding: 24,
+        m1Label: '가로', m1Value: '- cm', m2Label: '세로', m2Value: '- cm',
+        m3Label: '높이', m3Value: '- cm', m4Label: '손잡이', m4Value: '- cm',
+        weight: '- g', material: '-' },
       { id: 's12', type: 'spacer', height: 8, bgColor: '#f5f5f5' },
       { id: 's13', type: 'text',
         text: '[ 주문 및 배송 안내 ]\n\n• 주문 후 1~3 영업일 이내 발송됩니다.\n• 제주·도서산간 지역은 추가 배송비가 발생할 수 있습니다.\n\n[ 교환 및 반품 안내 ]\n\n• 수령 후 7일 이내 교환·반품 가능합니다.\n• 착용·세탁 후 교환·반품이 불가합니다.\n• 색상은 모니터 환경에 따라 다소 차이가 있을 수 있습니다.',

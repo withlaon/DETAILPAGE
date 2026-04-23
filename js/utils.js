@@ -580,6 +580,157 @@ function renderSectionHTML(section) {
     </div>`;
   }
 
+  // ── 모델 핏 (Model Fit) — 3:4 비율 동적 이미지 ─
+  if (section.type === 'modelfit') {
+    const bg     = section.bgColor  || '#ffffff';
+    const pv     = section.paddingV !== undefined ? section.paddingV : 16;
+    const ph     = section.paddingH !== undefined ? section.paddingH : 0;
+    const title  = section.title    || 'Model Fit';
+    const count  = Math.max(section.count || 2, 1);
+    const gap    = section.gap      !== undefined ? section.gap : 4;
+    const perRow = section.perRow   || 2;
+
+    const imgCells = [];
+    for (let i = 1; i <= count; i++) {
+      const imgUrl = section[`imageUrl${i}`] || '';
+      const clickA = isEditor ? `onclick="event.stopPropagation();triggerGenericUpload('${id}','imageUrl${i}')"` : '';
+      const dropA  = isEditor
+        ? `ondragover="event.stopPropagation();handleCanvasDragOver(event,this)"
+           ondragleave="handleCanvasDragLeave(event,this)"
+           ondrop="handleCanvasDropGeneric(event,'${id}','imageUrl${i}')"` : '';
+      let inner;
+      if (imgUrl) {
+        inner = `<div ${clickA} ${dropA}
+          style="position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:4px;${isEditor?'cursor:pointer;':''}">
+          <img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;display:block;">
+          ${isEditor ? `<div style="position:absolute;inset:0;background:transparent;display:flex;align-items:center;
+            justify-content:center;transition:background 0.2s;"
+            onmouseenter="this.style.background='rgba(0,0,0,0.3)';this.querySelector('.mf-lbl').style.opacity='1'"
+            onmouseleave="this.style.background='transparent';this.querySelector('.mf-lbl').style.opacity='0'">
+            <span class="mf-lbl" style="opacity:0;color:#fff;font-size:12px;font-weight:600;
+              background:rgba(0,0,0,0.6);padding:6px 14px;border-radius:8px;pointer-events:none;transition:opacity 0.2s;">
+              이미지 변경
+            </span>
+          </div>` : ''}
+        </div>`;
+      } else {
+        inner = `<div ${clickA} ${dropA}
+          style="aspect-ratio:3/4;background:#f5f5f5;border:2px dashed #ddd;border-radius:4px;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            gap:8px;${isEditor?'cursor:pointer;':''}"
+          ${isEditor?`onmouseenter="this.style.background='#eef2ff';this.style.borderColor='#7c3aed'"
+            onmouseleave="this.style.background='#f5f5f5';this.style.borderColor='#ddd'"`:''}>
+          <svg width="24" height="24" fill="none" stroke="#ccc" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86
+              a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2
+              H5a2 2 0 01-2-2V9z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span style="font-size:11px;color:#ccc;">3:4 비율</span>
+          ${isEditor?'<span style="font-size:10px;color:#bbb;">클릭 또는 드래그</span>':''}
+        </div>`;
+      }
+      imgCells.push(`<div style="flex:1;min-width:0;">${inner}</div>`);
+    }
+
+    let rowsHtml = '';
+    for (let r = 0; r < imgCells.length; r += perRow) {
+      const rowSlice = imgCells.slice(r, r + perRow);
+      while (rowSlice.length < perRow) rowSlice.push(`<div style="flex:1;min-width:0;"></div>`);
+      rowsHtml += `<div style="display:flex;gap:${gap}px;${r > 0 ? `margin-top:${gap}px;` : ''}">${rowSlice.join('')}</div>`;
+    }
+
+    return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;">
+      <p style="font-size:13px;font-weight:700;color:#7c3aed;text-align:center;margin:0 0 16px;
+        letter-spacing:0.12em;font-family:'Noto Sans KR',sans-serif;">— ${title} —</p>
+      ${rowsHtml}
+    </div>`;
+  }
+
+  // ── 사이즈 정보 (Size Information) ────────────
+  if (section.type === 'sizeinfo') {
+    const bg  = section.bgColor || '#f0eeff';
+    const pad = section.padding !== undefined ? section.padding : 24;
+    const title = section.title || 'SIZE INFORMATION';
+    const imgUrl = section.imageUrl || '';
+    const mRows = [
+      { label: section.m1Label || '가로',   value: section.m1Value || '- cm' },
+      { label: section.m2Label || '세로',   value: section.m2Value || '- cm' },
+      { label: section.m3Label || '높이',   value: section.m3Value || '- cm' },
+      { label: section.m4Label || '손잡이', value: section.m4Value || '- cm' },
+    ];
+    const weight   = section.weight   || '- g';
+    const material = section.material || '-';
+
+    const clickA = isEditor ? `onclick="event.stopPropagation();triggerImageUpload('${id}')"` : '';
+    const dropA  = isEditor
+      ? `ondragover="event.stopPropagation();handleCanvasDragOver(event,this)"
+         ondragleave="handleCanvasDragLeave(event,this)"
+         ondrop="handleCanvasDrop(event,'${id}',0)"` : '';
+
+    let imgEl;
+    if (imgUrl) {
+      imgEl = `<div ${clickA} ${dropA} style="position:relative;${isEditor?'cursor:pointer;':''}">
+        <img src="${imgUrl}" style="width:100%;display:block;border-radius:10px;object-fit:contain;">
+        ${isEditor ? `<div style="position:absolute;inset:0;background:transparent;border-radius:10px;
+          display:flex;align-items:center;justify-content:center;transition:background 0.2s;"
+          onmouseenter="this.style.background='rgba(124,58,237,0.18)'"
+          onmouseleave="this.style.background='transparent'">
+          <span style="color:#fff;font-size:12px;font-weight:600;background:rgba(0,0,0,0.5);
+            padding:6px 14px;border-radius:8px;pointer-events:none;">이미지 변경</span>
+        </div>` : ''}
+      </div>`;
+    } else {
+      imgEl = `<div ${clickA} ${dropA} style="min-height:220px;background:#e4dff8;border:2px dashed #c0b4f0;
+        border-radius:10px;display:flex;flex-direction:column;align-items:center;
+        justify-content:center;gap:10px;${isEditor?'cursor:pointer;':''}"
+        ${isEditor?`onmouseenter="this.style.background='#d8d0f5'" onmouseleave="this.style.background='#e4dff8'"`:''}>
+        <svg width="32" height="32" fill="none" stroke="#a99ae0" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86
+            a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2
+            H5a2 2 0 01-2-2V9z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <span style="font-size:13px;color:#9b90c8;font-family:'Noto Sans KR',sans-serif;">상품 이미지 업로드</span>
+        ${isEditor?'<span style="font-size:11px;color:#b8b0d8;">클릭 또는 드래그</span>':''}
+      </div>`;
+    }
+
+    const rowsHtml = mRows.map(r => `
+      <div style="display:flex;justify-content:space-between;align-items:center;
+        padding:10px 0;border-bottom:1px solid #e0d8ff;">
+        <span style="font-size:14px;color:#666;font-family:'Noto Sans KR',sans-serif;">${r.label}</span>
+        <span style="font-size:14px;color:#333;font-weight:600;font-family:'Noto Sans KR',sans-serif;">${r.value}</span>
+      </div>`).join('');
+
+    return `<div id="${id}" style="background:${bg};padding:${pad}px;border-radius:18px;margin:12px 0;">
+      <p style="font-size:19px;font-weight:800;color:#7c3aed;text-align:center;margin:0 0 22px;
+        letter-spacing:0.08em;font-family:'Noto Sans KR',sans-serif;">${title}</p>
+      <div style="display:flex;gap:22px;align-items:flex-start;">
+        <div style="flex:0 0 43%;">${imgEl}</div>
+        <div style="flex:1;min-width:0;">
+          <p style="font-size:11px;font-weight:700;color:#7c3aed;margin:0 0 8px;
+            letter-spacing:0.1em;font-family:'Noto Sans KR',sans-serif;">MEASUREMENT GUIDE</p>
+          ${rowsHtml}
+          <p style="font-size:11px;font-weight:700;color:#7c3aed;margin:18px 0 10px;
+            letter-spacing:0.1em;font-family:'Noto Sans KR',sans-serif;">TECHNICAL SPECS</p>
+          <div style="display:flex;gap:8px;">
+            <div style="flex:1;background:#fff;border-radius:10px;padding:14px;border:1px solid #e0d8ff;">
+              <p style="font-size:10px;color:#aaa;margin:0 0 6px;letter-spacing:0.1em;">WEIGHT</p>
+              <p style="font-size:18px;font-weight:700;color:#333;margin:0;font-family:'Noto Sans KR',sans-serif;">${weight}</p>
+            </div>
+            <div style="flex:1;background:#7c3aed;border-radius:10px;padding:14px;">
+              <p style="font-size:10px;color:rgba(255,255,255,0.72);margin:0 0 6px;letter-spacing:0.1em;">MATERIAL</p>
+              <p style="font-size:18px;font-weight:700;color:#fff;margin:0;font-family:'Noto Sans KR',sans-serif;">${material}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
   // ── 텍스트 ───────────────────────────────────
   if (section.type === 'text') {
     const bg   = section.bgColor || '#ffffff';

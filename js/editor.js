@@ -123,6 +123,8 @@ function renderSectionList() {
     grid3:       `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="5" width="6" height="14" rx="1" stroke-width="2"/><rect x="9" y="5" width="6" height="14" rx="1" stroke-width="2"/><rect x="16" y="5" width="6" height="14" rx="1" stroke-width="2"/></svg>`,
     coloroption: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="6" cy="12" r="3" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke-width="2"/><circle cx="18" cy="12" r="3" stroke-width="2"/></svg>`,
     detailview:  `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>`,
+    modelfit:    `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`,
+    sizeinfo:    `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>`,
     text:        `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h10"/></svg>`,
     spacer:      `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>`,
   };
@@ -130,12 +132,14 @@ function renderSectionList() {
     hero:'text-pink-500', promo:'text-orange-500', image:'text-indigo-500',
     grid2:'text-purple-500', grid3:'text-violet-500',
     coloroption:'text-fuchsia-500', detailview:'text-violet-600',
+    modelfit:'text-violet-500', sizeinfo:'text-indigo-600',
     text:'text-emerald-500', spacer:'text-amber-500'
   };
   const typeLabels = {
     hero:'히어로', promo:'홍보문구', image:'이미지',
     grid2:'2단 그리드', grid3:'3단 그리드',
     coloroption:'컬러 옵션', detailview:'디테일 컷',
+    modelfit:'모델 핏', sizeinfo:'사이즈 정보',
     text:'텍스트', spacer:'여백'
   };
 
@@ -181,7 +185,7 @@ function renderCanvas() {
       <div style="position:absolute;bottom:6px;left:6px;z-index:15;pointer-events:none;">
         <span style="background:rgba(0,0,0,0.55);color:#fff;font-size:10px;padding:2px 7px;
           border-radius:4px;font-family:'Noto Sans KR',sans-serif;">
-          ${{grid2:'2단 그리드',grid3:'3단 그리드',coloroption:'컬러옵션',detailview:'디테일컷',hero:'히어로'}[sec.type] || (sec.label || sec.type)}
+          ${{grid2:'2단 그리드',grid3:'3단 그리드',coloroption:'컬러옵션',detailview:'디테일컷',hero:'히어로',modelfit:'모델핏',sizeinfo:'사이즈정보'}[sec.type] || (sec.label || sec.type)}
         </span>
       </div>` : ''}
     </div>`;
@@ -229,6 +233,8 @@ function renderPropPanel() {
   else if (sec.type === 'grid3')       renderGrid3Props(sec);
   else if (sec.type === 'coloroption') renderColorOptionProps(sec);
   else if (sec.type === 'detailview')  renderDetailViewProps(sec);
+  else if (sec.type === 'modelfit')    renderModelFitProps(sec);
+  else if (sec.type === 'sizeinfo')    renderSizeInfoProps(sec);
   else if (sec.type === 'text')        renderTextProps(sec);
   else if (sec.type === 'spacer')      renderSpacerProps(sec);
 }
@@ -613,15 +619,19 @@ function renderColorOptionProps(sec) {
     const nameKey = `name${i}`;
     itemRows += `
     <div class="prop-section border-t border-fuchsia-100">
-      <label class="prop-label">옵션 ${i} — 이미지</label>
-      ${sec[key] ? `<img src="${sec[key]}" class="w-full rounded-lg mb-2 object-cover max-h-20 aspect-square object-center">` : ''}
+      <div class="flex items-center justify-between mb-2">
+        <label class="prop-label !mb-0">옵션 ${i}</label>
+        <button onclick="removeColorOptionSlot('${sec.id}',${i})"
+          class="text-xs text-rose-400 hover:text-rose-600 px-2 py-0.5 border border-rose-200 rounded">✕ 삭제</button>
+      </div>
+      ${sec[key] ? `<img src="${sec[key]}" class="w-full rounded-lg mb-2 object-cover max-h-20" style="aspect-ratio:1;object-fit:cover;">` : ''}
       <div class="upload-zone" onclick="triggerGenericUpload('${sec.id}','${key}')"
            ondragover="event.preventDefault();this.classList.add('dragover')"
            ondragleave="this.classList.remove('dragover')"
            ondrop="event.preventDefault();this.classList.remove('dragover');handleCanvasDropGeneric(event,'${sec.id}','${key}')">
         <p class="text-xs text-fuchsia-600 font-medium">클릭 또는 드래그</p>
       </div>
-      <label class="prop-label mt-2">옵션 ${i} — 옵션명</label>
+      <label class="prop-label mt-2">옵션명</label>
       <input type="text" class="prop-input" placeholder="예) 블랙" value="${sec[nameKey]||''}"
         oninput="updateSectionAndRender('${sec.id}','${nameKey}',this.value)">
     </div>`;
@@ -629,19 +639,21 @@ function renderColorOptionProps(sec) {
 
   panel.innerHTML = `
     <div class="px-4 py-3 bg-fuchsia-50 border-b border-fuchsia-100">
-      <span class="text-sm font-bold text-fuchsia-800">컬러 옵션 섹션</span>
+      <span class="text-sm font-bold text-fuchsia-800">컬러 옵션 섹션 (${cols}개)</span>
     </div>
     <div class="prop-section">
       <label class="prop-label">제목 텍스트</label>
       <input type="text" class="prop-input" value="${sec.title||'Color Options'}"
         oninput="updateSectionAndRender('${sec.id}','title',this.value)">
     </div>
-    <div class="prop-section">
-      <label class="prop-label">옵션 개수: <span id="coColsVal">${cols}</span>개</label>
-      <input type="range" min="2" max="6" value="${cols}"
-        oninput="document.getElementById('coColsVal').textContent=this.value;updateSectionAndRender('${sec.id}','cols',parseInt(this.value))">
-    </div>
     ${itemRows}
+    <div class="prop-section">
+      <button onclick="addColorOptionSlot('${sec.id}')" ${cols>=6?'disabled style="opacity:0.4;"':''}
+        class="w-full py-2 text-sm font-semibold text-fuchsia-600 border-2 border-dashed border-fuchsia-300
+          rounded-lg hover:bg-fuchsia-50 transition-colors">
+        + 옵션 슬롯 추가 (최대 6개)
+      </button>
+    </div>
     <div class="prop-section">
       <label class="prop-label">배경 색상</label>
       <div class="flex items-center gap-2">
@@ -697,6 +709,181 @@ function renderDetailViewProps(sec) {
         <input type="color" value="${sec.bgColor||'#ffffff'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
           oninput="updateSectionAndRender('${sec.id}','bgColor',this.value)">
         <input type="text" class="prop-input" value="${sec.bgColor||'#ffffff'}"
+          onchange="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+      </div>
+    </div>
+    <div class="prop-section flex gap-2">
+      <button onclick="moveSectionUp('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↑ 위로</button>
+      <button onclick="moveSectionDown('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↓ 아래로</button>
+      <button onclick="duplicateSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-indigo-600 hover:bg-indigo-50 border border-indigo-200 rounded-lg">복제</button>
+      <button onclick="deleteSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg">삭제</button>
+    </div>`;
+}
+
+// ── 슬롯 동적 관리: 컬러 옵션 ─────────────────
+function addColorOptionSlot(sectionId) {
+  const sec = pageData.sections.find(s => s.id === sectionId);
+  if (!sec || (sec.cols || 4) >= 6) return;
+  sec.cols = (sec.cols || 4) + 1;
+  markUnsaved(); renderCanvas(); renderPropPanel();
+}
+function removeColorOptionSlot(sectionId, idx) {
+  const sec = pageData.sections.find(s => s.id === sectionId);
+  if (!sec || (sec.cols || 4) <= 1) return;
+  const cols = sec.cols || 4;
+  for (let i = idx; i < cols; i++) {
+    sec[`imageUrl${i}`] = sec[`imageUrl${i+1}`] || '';
+    sec[`name${i}`]     = sec[`name${i+1}`]     || '';
+  }
+  delete sec[`imageUrl${cols}`]; delete sec[`name${cols}`];
+  sec.cols = cols - 1;
+  markUnsaved(); renderCanvas(); renderPropPanel();
+}
+
+// ── 슬롯 동적 관리: 모델 핏 ───────────────────
+function addModelFitSlot(sectionId) {
+  const sec = pageData.sections.find(s => s.id === sectionId);
+  if (!sec) return;
+  sec.count = (sec.count || 2) + 1;
+  markUnsaved(); renderCanvas(); renderPropPanel();
+}
+function removeModelFitSlot(sectionId, idx) {
+  const sec = pageData.sections.find(s => s.id === sectionId);
+  if (!sec || (sec.count || 2) <= 1) return;
+  const count = sec.count || 2;
+  for (let i = idx; i < count; i++) {
+    sec[`imageUrl${i}`] = sec[`imageUrl${i+1}`] || '';
+  }
+  delete sec[`imageUrl${count}`];
+  sec.count = count - 1;
+  markUnsaved(); renderCanvas(); renderPropPanel();
+}
+
+// ── 속성 패널: 모델 핏 ──────────────────────────
+function renderModelFitProps(sec) {
+  const panel = document.getElementById('propPanel');
+  const count = sec.count || 2;
+  const perRow = sec.perRow || 2;
+
+  let slots = '';
+  for (let i = 1; i <= count; i++) {
+    const key = `imageUrl${i}`;
+    slots += `
+    <div class="prop-section border-t border-violet-100">
+      <div class="flex items-center justify-between mb-2">
+        <label class="prop-label !mb-0">이미지 ${i}</label>
+        <button onclick="removeModelFitSlot('${sec.id}',${i})"
+          class="text-xs text-rose-400 hover:text-rose-600 px-2 py-0.5 border border-rose-200 rounded">✕ 삭제</button>
+      </div>
+      ${sec[key] ? `<img src="${sec[key]}" class="w-full rounded-lg mb-2 object-cover max-h-20" style="aspect-ratio:3/4;object-fit:cover;">` : ''}
+      <div class="upload-zone" onclick="triggerGenericUpload('${sec.id}','${key}')"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="event.preventDefault();this.classList.remove('dragover');handleCanvasDropGeneric(event,'${sec.id}','${key}')">
+        <p class="text-xs text-violet-600 font-medium">3:4 비율 · 클릭 또는 드래그</p>
+      </div>
+    </div>`;
+  }
+
+  panel.innerHTML = `
+    <div class="px-4 py-3 bg-violet-50 border-b border-violet-100">
+      <span class="text-sm font-bold text-violet-800">모델 핏 섹션</span>
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">제목</label>
+      <input type="text" class="prop-input" value="${sec.title||'Model Fit'}"
+        oninput="updateSectionAndRender('${sec.id}','title',this.value)">
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">한 줄 이미지 수</label>
+      <div class="flex gap-2">
+        ${[1,2,3].map(n=>`<button class="flex-1 py-1.5 text-xs rounded border ${perRow===n?'border-violet-500 bg-violet-50 text-violet-700':'border-slate-200 text-slate-600'}"
+          onclick="updateSectionAndRender('${sec.id}','perRow',${n});renderPropPanel()">${n}개</button>`).join('')}
+      </div>
+    </div>
+    ${slots}
+    <div class="prop-section">
+      <button onclick="addModelFitSlot('${sec.id}')"
+        class="w-full py-2 text-sm font-semibold text-violet-600 border-2 border-dashed border-violet-300
+          rounded-lg hover:bg-violet-50 transition-colors">
+        + 이미지 슬롯 추가
+      </button>
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">간격: <span id="mfGapVal">${sec.gap||4}</span>px</label>
+      <input type="range" min="0" max="20" value="${sec.gap||4}"
+        oninput="document.getElementById('mfGapVal').textContent=this.value;updateSectionAndRender('${sec.id}','gap',parseInt(this.value))">
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">배경 색상</label>
+      <div class="flex items-center gap-2">
+        <input type="color" value="${sec.bgColor||'#ffffff'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+          oninput="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+        <input type="text" class="prop-input" value="${sec.bgColor||'#ffffff'}"
+          onchange="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+      </div>
+    </div>
+    <div class="prop-section flex gap-2">
+      <button onclick="moveSectionUp('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↑ 위로</button>
+      <button onclick="moveSectionDown('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↓ 아래로</button>
+      <button onclick="duplicateSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-indigo-600 hover:bg-indigo-50 border border-indigo-200 rounded-lg">복제</button>
+      <button onclick="deleteSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg">삭제</button>
+    </div>`;
+}
+
+// ── 속성 패널: 사이즈 정보 ─────────────────────
+function renderSizeInfoProps(sec) {
+  const panel = document.getElementById('propPanel');
+  const mkMRow = (idx, label, value) => `
+    <div class="flex gap-2 mb-2">
+      <input type="text" class="prop-input" style="width:40%;" placeholder="항목명" value="${label}"
+        oninput="updateSectionAndRender('${sec.id}','m${idx}Label',this.value)">
+      <input type="text" class="prop-input" placeholder="치수값" value="${value}"
+        oninput="updateSectionAndRender('${sec.id}','m${idx}Value',this.value)">
+    </div>`;
+
+  panel.innerHTML = `
+    <div class="px-4 py-3 bg-indigo-50 border-b border-indigo-100">
+      <span class="text-sm font-bold text-indigo-800">사이즈 정보 섹션</span>
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">제목</label>
+      <input type="text" class="prop-input" value="${sec.title||'SIZE INFORMATION'}"
+        oninput="updateSectionAndRender('${sec.id}','title',this.value)">
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">상품 이미지 (왼쪽)</label>
+      ${sec.imageUrl ? `<img src="${sec.imageUrl}" class="w-full rounded-lg mb-2 object-contain max-h-32 border border-slate-100">` : ''}
+      <div class="upload-zone" onclick="triggerImageUpload('${sec.id}')"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="event.preventDefault();this.classList.remove('dragover');handleDrop(event,'${sec.id}')">
+        <p class="text-xs text-indigo-600 font-medium">클릭 또는 드래그하여 업로드</p>
+      </div>
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">치수 정보 (항목명 / 치수값)</label>
+      ${mkMRow(1, sec.m1Label||'가로',   sec.m1Value||'- cm')}
+      ${mkMRow(2, sec.m2Label||'세로',   sec.m2Value||'- cm')}
+      ${mkMRow(3, sec.m3Label||'높이',   sec.m3Value||'- cm')}
+      ${mkMRow(4, sec.m4Label||'손잡이', sec.m4Value||'- cm')}
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">무게 (WEIGHT)</label>
+      <input type="text" class="prop-input" placeholder="예) 238 g" value="${sec.weight||''}"
+        oninput="updateSectionAndRender('${sec.id}','weight',this.value)">
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">소재 (MATERIAL)</label>
+      <input type="text" class="prop-input" placeholder="예) 캔버스" value="${sec.material||''}"
+        oninput="updateSectionAndRender('${sec.id}','material',this.value)">
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">배경 색상</label>
+      <div class="flex items-center gap-2">
+        <input type="color" value="${sec.bgColor||'#f0eeff'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+          oninput="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+        <input type="text" class="prop-input" value="${sec.bgColor||'#f0eeff'}"
           onchange="updateSectionAndRender('${sec.id}','bgColor',this.value)">
       </div>
     </div>
@@ -857,7 +1044,17 @@ function setAlign(id, align, btn) {
 
 function addSection(type) {
   let newSec;
-  if (type === 'grid3') {
+  if (type === 'modelfit') {
+    newSec = { id: generateId(), type: 'modelfit', title: 'Model Fit',
+      count: 2, perRow: 2, gap: 4, bgColor: '#ffffff', paddingV: 16, paddingH: 0,
+      imageUrl1: '', imageUrl2: '' };
+  } else if (type === 'sizeinfo') {
+    newSec = { id: generateId(), type: 'sizeinfo', title: 'SIZE INFORMATION',
+      imageUrl: '', bgColor: '#f0eeff', padding: 24,
+      m1Label: '가로', m1Value: '- cm', m2Label: '세로', m2Value: '- cm',
+      m3Label: '높이', m3Value: '- cm', m4Label: '손잡이', m4Value: '- cm',
+      weight: '- g', material: '-' };
+  } else if (type === 'grid3') {
     newSec = { id: generateId(), type: 'grid3',
       imageUrl1: '', imageUrl2: '', imageUrl3: '',
       label1: '이미지 1', label2: '이미지 2', label3: '이미지 3',
