@@ -285,7 +285,7 @@ function renderSectionHTML(section) {
     const brandText = section.brandText !== undefined ? section.brandText : 'Withlaon';
     const textColor = section.textColor || '#ffffff';
     const gradStop  = section.gradStop  !== undefined ? section.gradStop : 42;
-    const gradColor = section.gradColor || 'rgba(109,40,217,0.55)';
+    const gradColor = section.gradColor || 'rgba(167,139,250,0.32)';
     // 에디터 전용 업로드 핸들러 (triggerImageUpload는 editor.js에 정의됨)
     const uploadFn = `triggerImageUpload('${id}')`;
 
@@ -454,6 +454,129 @@ function renderSectionHTML(section) {
         <div style="flex:1;min-width:0;">${left}</div>
         <div style="flex:1;min-width:0;">${right}</div>
       </div>
+    </div>`;
+  }
+
+  // ── 3단 그리드 이미지 ─────────────────────────
+  if (section.type === 'grid3') {
+    const bg  = section.bgColor || '#ffffff';
+    const gap = section.gap     !== undefined ? section.gap     : 4;
+    const pad = section.padding !== undefined ? section.padding : 0;
+    const cols = [1, 2, 3];
+    const cells = cols.map(i => {
+      const imgUrl  = section[`imageUrl${i}`] || '';
+      const lbl     = section[`label${i}`] || `이미지 ${i}`;
+      const clickA  = isEditor ? `onclick="event.stopPropagation();triggerGenericUpload('${id}','imageUrl${i}')"` : '';
+      const dropA   = isEditor
+        ? `ondragover="event.stopPropagation();handleCanvasDragOver(event,this)"
+           ondragleave="handleCanvasDragLeave(event,this)"
+           ondrop="handleCanvasDropGeneric(event,'${id}','imageUrl${i}')"` : '';
+      return `<div style="flex:1;min-width:0;">
+        ${imgUrl
+          ? _imgWithOverlay(imgUrl, lbl, clickA, dropA)
+          : _imgPlaceholder(lbl, clickA, 200, dropA)}
+      </div>`;
+    }).join('');
+    return `<div id="${id}" style="background:${bg};padding:${pad}px;">
+      <div style="display:flex;gap:${gap}px;">${cells}</div>
+    </div>`;
+  }
+
+  // ── 컬러 옵션 이미지 (Color Options) ──────────
+  if (section.type === 'coloroption') {
+    const bg    = section.bgColor  || '#ffffff';
+    const pv    = section.paddingV !== undefined ? section.paddingV : 32;
+    const ph    = section.paddingH !== undefined ? section.paddingH : 24;
+    const title = section.title    || 'Color Options';
+    const cols  = Math.min(Math.max(section.cols || 4, 1), 6);
+    const gap   = section.gap      !== undefined ? section.gap : 12;
+
+    let cells = '';
+    for (let i = 1; i <= cols; i++) {
+      const imgUrl = section[`imageUrl${i}`] || '';
+      const name   = section[`name${i}`]    || '';
+      const clickA = isEditor ? `onclick="event.stopPropagation();triggerGenericUpload('${id}','imageUrl${i}')"` : '';
+      const dropA  = isEditor
+        ? `ondragover="event.stopPropagation();handleCanvasDragOver(event,this)"
+           ondragleave="handleCanvasDragLeave(event,this)"
+           ondrop="handleCanvasDropGeneric(event,'${id}','imageUrl${i}')"` : '';
+      const imgEl = imgUrl
+        ? `<div ${clickA} ${dropA} style="${isEditor?'cursor:pointer;':''}position:relative;">
+            <img src="${imgUrl}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;border-radius:6px;">
+            ${isEditor ? `<div style="position:absolute;inset:0;background:transparent;border-radius:6px;
+              display:flex;align-items:center;justify-content:center;transition:background 0.2s;"
+              onmouseenter="this.style.background='rgba(109,40,217,0.25)'"
+              onmouseleave="this.style.background='transparent'">
+              <span style="opacity:0;color:#fff;font-size:11px;font-weight:600;pointer-events:none;"
+                class="chg-lbl">변경</span>
+            </div>` : ''}
+          </div>`
+        : `<div ${clickA} ${dropA}
+            style="width:100%;aspect-ratio:1;background:#f5f5f5;border:2px dashed #ddd;
+              border-radius:6px;display:flex;flex-direction:column;align-items:center;
+              justify-content:center;${isEditor?'cursor:pointer;':''}gap:6px;"
+            ${isEditor?`onmouseenter="this.style.background='#eef2ff';this.style.borderColor='#7c3aed'"
+              onmouseleave="this.style.background='#f5f5f5';this.style.borderColor='#ddd'"`:''}>
+            <svg width="20" height="20" fill="none" stroke="#ccc" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86
+                a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2
+                H5a2 2 0 01-2-2V9z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span style="font-size:10px;color:#bbb;">이미지 업로드</span>
+          </div>`;
+      cells += `<div style="flex:1;min-width:0;text-align:center;">
+        ${imgEl}
+        <p style="font-size:12px;color:#666;margin:8px 0 0;padding:0 2px;
+          font-family:'Noto Sans KR',sans-serif;line-height:1.4;">
+          ${name || (isEditor ? '<span style="color:#ccc;">옵션명</span>' : '')}
+        </p>
+      </div>`;
+    }
+
+    return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;">
+      <p style="font-size:13px;font-weight:700;color:#7c3aed;text-align:center;margin:0 0 20px;
+        letter-spacing:0.12em;font-family:'Noto Sans KR',sans-serif;">
+        — ${title} —
+      </p>
+      <div style="display:flex;gap:${gap}px;align-items:flex-start;">${cells}</div>
+    </div>`;
+  }
+
+  // ── 디테일 컷 (Detail View) ───────────────────
+  if (section.type === 'detailview') {
+    const bg    = section.bgColor  || '#ffffff';
+    const pv    = section.paddingV !== undefined ? section.paddingV : 20;
+    const ph    = section.paddingH !== undefined ? section.paddingH : 20;
+    const title = section.title    || 'Detail View';
+    const gap   = section.gap      !== undefined ? section.gap : 6;
+    const rows  = [[1,2],[3,4]];
+
+    const rowsHtml = rows.map(pair => {
+      const cells = pair.map(i => {
+        const imgUrl = section[`imageUrl${i}`] || '';
+        const lbl    = `디테일 ${i}`;
+        const clickA = isEditor ? `onclick="event.stopPropagation();triggerGenericUpload('${id}','imageUrl${i}')"` : '';
+        const dropA  = isEditor
+          ? `ondragover="event.stopPropagation();handleCanvasDragOver(event,this)"
+             ondragleave="handleCanvasDragLeave(event,this)"
+             ondrop="handleCanvasDropGeneric(event,'${id}','imageUrl${i}')"` : '';
+        return `<div style="flex:1;min-width:0;">
+          ${imgUrl
+            ? _imgWithOverlay(imgUrl, lbl, clickA, dropA)
+            : _imgPlaceholder(lbl, clickA, 220, dropA)}
+        </div>`;
+      }).join('');
+      return `<div style="display:flex;gap:${gap}px;">${cells}</div>`;
+    }).join(`<div style="height:${gap}px;"></div>`);
+
+    return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;">
+      <p style="font-size:13px;font-weight:700;color:#7c3aed;text-align:center;margin:0 0 16px;
+        letter-spacing:0.12em;font-family:'Noto Sans KR',sans-serif;">
+        — ${title} —
+      </p>
+      ${rowsHtml}
     </div>`;
   }
 

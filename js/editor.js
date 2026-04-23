@@ -116,15 +116,28 @@ function updateSectionCount() {
 function renderSectionList() {
   const list = document.getElementById('sectionList');
   const typeIcons = {
-    hero:  `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm0 0l7 9 7-9M3 15h18"/></svg>`,
-    promo: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>`,
-    image: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`,
-    grid2: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h4a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v12a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z"/></svg>`,
-    text:  `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h10"/></svg>`,
-    spacer:`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>`,
+    hero:        `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm0 0l7 9 7-9M3 15h18"/></svg>`,
+    promo:       `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>`,
+    image:       `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`,
+    grid2:       `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h4a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v12a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z"/></svg>`,
+    grid3:       `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="5" width="6" height="14" rx="1" stroke-width="2"/><rect x="9" y="5" width="6" height="14" rx="1" stroke-width="2"/><rect x="16" y="5" width="6" height="14" rx="1" stroke-width="2"/></svg>`,
+    coloroption: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="6" cy="12" r="3" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke-width="2"/><circle cx="18" cy="12" r="3" stroke-width="2"/></svg>`,
+    detailview:  `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>`,
+    text:        `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h10"/></svg>`,
+    spacer:      `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>`,
   };
-  const typeColors = { hero:'text-pink-500', promo:'text-orange-500', image:'text-indigo-500', grid2:'text-purple-500', text:'text-emerald-500', spacer:'text-amber-500' };
-  const typeLabels = { hero:'히어로', promo:'홍보문구', image:'이미지', grid2:'2단 그리드', text:'텍스트', spacer:'여백' };
+  const typeColors = {
+    hero:'text-pink-500', promo:'text-orange-500', image:'text-indigo-500',
+    grid2:'text-purple-500', grid3:'text-violet-500',
+    coloroption:'text-fuchsia-500', detailview:'text-violet-600',
+    text:'text-emerald-500', spacer:'text-amber-500'
+  };
+  const typeLabels = {
+    hero:'히어로', promo:'홍보문구', image:'이미지',
+    grid2:'2단 그리드', grid3:'3단 그리드',
+    coloroption:'컬러 옵션', detailview:'디테일 컷',
+    text:'텍스트', spacer:'여백'
+  };
 
   list.innerHTML = pageData.sections.map((sec, idx) => {
     const isActive = sec.id === selectedSectionId;
@@ -168,7 +181,7 @@ function renderCanvas() {
       <div style="position:absolute;bottom:6px;left:6px;z-index:15;pointer-events:none;">
         <span style="background:rgba(0,0,0,0.55);color:#fff;font-size:10px;padding:2px 7px;
           border-radius:4px;font-family:'Noto Sans KR',sans-serif;">
-          ${sec.type === 'grid2' ? '2단 그리드' : (sec.label || sec.type)}
+          ${{grid2:'2단 그리드',grid3:'3단 그리드',coloroption:'컬러옵션',detailview:'디테일컷',hero:'히어로'}[sec.type] || (sec.label || sec.type)}
         </span>
       </div>` : ''}
     </div>`;
@@ -209,12 +222,15 @@ function renderPropPanel() {
   empty.classList.add('hidden');
   panel.classList.remove('hidden');
 
-  if      (sec.type === 'hero')   renderHeroProps(sec);
-  else if (sec.type === 'promo')  renderPromoProps(sec);
-  else if (sec.type === 'image')  renderImageProps(sec);
-  else if (sec.type === 'grid2')  renderGrid2Props(sec);
-  else if (sec.type === 'text')   renderTextProps(sec);
-  else if (sec.type === 'spacer') renderSpacerProps(sec);
+  if      (sec.type === 'hero')        renderHeroProps(sec);
+  else if (sec.type === 'promo')       renderPromoProps(sec);
+  else if (sec.type === 'image')       renderImageProps(sec);
+  else if (sec.type === 'grid2')       renderGrid2Props(sec);
+  else if (sec.type === 'grid3')       renderGrid3Props(sec);
+  else if (sec.type === 'coloroption') renderColorOptionProps(sec);
+  else if (sec.type === 'detailview')  renderDetailViewProps(sec);
+  else if (sec.type === 'text')        renderTextProps(sec);
+  else if (sec.type === 'spacer')      renderSpacerProps(sec);
 }
 
 function renderHeroProps(sec) {
@@ -536,6 +552,162 @@ function renderImageProps(sec) {
     </div>`;
 }
 
+// ── 속성 패널: 3단 그리드 ──────────────────────
+function renderGrid3Props(sec) {
+  const panel = document.getElementById('propPanel');
+  const mkUploadZone = (slot, label) => {
+    const key = `imageUrl${slot}`;
+    const lbl = `label${slot}`;
+    return `
+    <div class="prop-section border-t border-violet-100">
+      <label class="prop-label">${label} 이름</label>
+      <input type="text" class="prop-input" value="${sec[lbl]||''}"
+        onchange="updateSection('${sec.id}','${lbl}',this.value)">
+      <label class="prop-label mt-2">이미지 업로드</label>
+      ${sec[key] ? `<img src="${sec[key]}" class="w-full rounded-lg mb-2 object-cover max-h-24">` : ''}
+      <div class="upload-zone" onclick="triggerGenericUpload('${sec.id}','${key}')"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="event.preventDefault();this.classList.remove('dragover');handleCanvasDropGeneric(event,'${sec.id}','${key}')">
+        <p class="text-xs text-violet-600 font-medium">클릭 또는 드래그하여 업로드</p>
+      </div>
+    </div>`;
+  };
+  panel.innerHTML = `
+    <div class="px-4 py-3 bg-violet-50 border-b border-violet-100">
+      <span class="text-sm font-bold text-violet-800">3단 그리드 섹션</span>
+    </div>
+    ${mkUploadZone(1,'이미지 1')}
+    ${mkUploadZone(2,'이미지 2')}
+    ${mkUploadZone(3,'이미지 3')}
+    <div class="prop-section">
+      <label class="prop-label">간격: <span id="g3gVal">${sec.gap||4}</span>px</label>
+      <input type="range" min="0" max="30" value="${sec.gap||4}"
+        oninput="document.getElementById('g3gVal').textContent=this.value;updateSectionAndRender('${sec.id}','gap',parseInt(this.value))">
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">배경 색상</label>
+      <div class="flex items-center gap-2">
+        <input type="color" value="${sec.bgColor||'#ffffff'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+          oninput="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+        <input type="text" class="prop-input" value="${sec.bgColor||'#ffffff'}"
+          onchange="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+      </div>
+    </div>
+    <div class="prop-section flex gap-2">
+      <button onclick="moveSectionUp('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↑ 위로</button>
+      <button onclick="moveSectionDown('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↓ 아래로</button>
+      <button onclick="duplicateSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-indigo-600 hover:bg-indigo-50 border border-indigo-200 rounded-lg">복제</button>
+      <button onclick="deleteSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg">삭제</button>
+    </div>`;
+}
+
+// ── 속성 패널: 컬러 옵션 ───────────────────────
+function renderColorOptionProps(sec) {
+  const panel = document.getElementById('propPanel');
+  const cols = sec.cols || 4;
+
+  let itemRows = '';
+  for (let i = 1; i <= Math.min(cols, 6); i++) {
+    const key = `imageUrl${i}`;
+    const nameKey = `name${i}`;
+    itemRows += `
+    <div class="prop-section border-t border-fuchsia-100">
+      <label class="prop-label">옵션 ${i} — 이미지</label>
+      ${sec[key] ? `<img src="${sec[key]}" class="w-full rounded-lg mb-2 object-cover max-h-20 aspect-square object-center">` : ''}
+      <div class="upload-zone" onclick="triggerGenericUpload('${sec.id}','${key}')"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="event.preventDefault();this.classList.remove('dragover');handleCanvasDropGeneric(event,'${sec.id}','${key}')">
+        <p class="text-xs text-fuchsia-600 font-medium">클릭 또는 드래그</p>
+      </div>
+      <label class="prop-label mt-2">옵션 ${i} — 옵션명</label>
+      <input type="text" class="prop-input" placeholder="예) 블랙" value="${sec[nameKey]||''}"
+        oninput="updateSectionAndRender('${sec.id}','${nameKey}',this.value)">
+    </div>`;
+  }
+
+  panel.innerHTML = `
+    <div class="px-4 py-3 bg-fuchsia-50 border-b border-fuchsia-100">
+      <span class="text-sm font-bold text-fuchsia-800">컬러 옵션 섹션</span>
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">제목 텍스트</label>
+      <input type="text" class="prop-input" value="${sec.title||'Color Options'}"
+        oninput="updateSectionAndRender('${sec.id}','title',this.value)">
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">옵션 개수: <span id="coColsVal">${cols}</span>개</label>
+      <input type="range" min="2" max="6" value="${cols}"
+        oninput="document.getElementById('coColsVal').textContent=this.value;updateSectionAndRender('${sec.id}','cols',parseInt(this.value))">
+    </div>
+    ${itemRows}
+    <div class="prop-section">
+      <label class="prop-label">배경 색상</label>
+      <div class="flex items-center gap-2">
+        <input type="color" value="${sec.bgColor||'#ffffff'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+          oninput="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+        <input type="text" class="prop-input" value="${sec.bgColor||'#ffffff'}"
+          onchange="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+      </div>
+    </div>
+    <div class="prop-section flex gap-2">
+      <button onclick="moveSectionUp('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↑ 위로</button>
+      <button onclick="moveSectionDown('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↓ 아래로</button>
+      <button onclick="duplicateSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-indigo-600 hover:bg-indigo-50 border border-indigo-200 rounded-lg">복제</button>
+      <button onclick="deleteSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg">삭제</button>
+    </div>`;
+}
+
+// ── 속성 패널: 디테일 컷 ───────────────────────
+function renderDetailViewProps(sec) {
+  const panel = document.getElementById('propPanel');
+  const mkUploadZone = (i) => {
+    const key = `imageUrl${i}`;
+    return `
+    <div class="prop-section border-t border-violet-100">
+      <label class="prop-label">디테일 이미지 ${i}</label>
+      ${sec[key] ? `<img src="${sec[key]}" class="w-full rounded-lg mb-2 object-cover max-h-20">` : ''}
+      <div class="upload-zone" onclick="triggerGenericUpload('${sec.id}','${key}')"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="event.preventDefault();this.classList.remove('dragover');handleCanvasDropGeneric(event,'${sec.id}','${key}')">
+        <p class="text-xs text-violet-600 font-medium">클릭 또는 드래그</p>
+      </div>
+    </div>`;
+  };
+  panel.innerHTML = `
+    <div class="px-4 py-3 bg-violet-50 border-b border-violet-100">
+      <span class="text-sm font-bold text-violet-800">디테일 컷 섹션</span>
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">제목 텍스트</label>
+      <input type="text" class="prop-input" value="${sec.title||'Detail View'}"
+        oninput="updateSectionAndRender('${sec.id}','title',this.value)">
+    </div>
+    ${mkUploadZone(1)}${mkUploadZone(2)}${mkUploadZone(3)}${mkUploadZone(4)}
+    <div class="prop-section">
+      <label class="prop-label">간격: <span id="dvGapVal">${sec.gap||6}</span>px</label>
+      <input type="range" min="0" max="20" value="${sec.gap||6}"
+        oninput="document.getElementById('dvGapVal').textContent=this.value;updateSectionAndRender('${sec.id}','gap',parseInt(this.value))">
+    </div>
+    <div class="prop-section">
+      <label class="prop-label">배경 색상</label>
+      <div class="flex items-center gap-2">
+        <input type="color" value="${sec.bgColor||'#ffffff'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+          oninput="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+        <input type="text" class="prop-input" value="${sec.bgColor||'#ffffff'}"
+          onchange="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+      </div>
+    </div>
+    <div class="prop-section flex gap-2">
+      <button onclick="moveSectionUp('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↑ 위로</button>
+      <button onclick="moveSectionDown('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↓ 아래로</button>
+      <button onclick="duplicateSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-indigo-600 hover:bg-indigo-50 border border-indigo-200 rounded-lg">복제</button>
+      <button onclick="deleteSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg">삭제</button>
+    </div>`;
+}
+
 function renderTextProps(sec) {
   const panel = document.getElementById('propPanel');
   const isBold = sec.fontWeight === 'bold';
@@ -685,10 +857,27 @@ function setAlign(id, align, btn) {
 
 function addSection(type) {
   let newSec;
-  if (type === 'hero') {
+  if (type === 'grid3') {
+    newSec = { id: generateId(), type: 'grid3',
+      imageUrl1: '', imageUrl2: '', imageUrl3: '',
+      label1: '이미지 1', label2: '이미지 2', label3: '이미지 3',
+      bgColor: '#ffffff', gap: 4, padding: 0 };
+  } else if (type === 'coloroption') {
+    newSec = { id: generateId(), type: 'coloroption',
+      title: 'Color Options', cols: 4, gap: 12,
+      imageUrl1:'', name1:'', imageUrl2:'', name2:'',
+      imageUrl3:'', name3:'', imageUrl4:'', name4:'',
+      imageUrl5:'', name5:'', imageUrl6:'', name6:'',
+      bgColor: '#ffffff', paddingV: 32, paddingH: 24 };
+  } else if (type === 'detailview') {
+    newSec = { id: generateId(), type: 'detailview',
+      title: 'Detail View', gap: 6,
+      imageUrl1:'', imageUrl2:'', imageUrl3:'', imageUrl4:'',
+      bgColor: '#ffffff', paddingV: 20, paddingH: 20 };
+  } else if (type === 'hero') {
     newSec = { id: generateId(), type: 'hero', imageUrl: '', bgColor: '#ffffff', padding: 16, radius: 10,
       subText: '일상에 특별함을 더하다', brandText: 'Withlaon',
-      textColor: '#ffffff', gradStop: 42, gradColor: 'rgba(109,40,217,0.55)', label: '대표 컷' };
+      textColor: '#ffffff', gradStop: 42, gradColor: 'rgba(167,139,250,0.32)', label: '대표 컷' };
   } else if (type === 'promo') {
     newSec = { id: generateId(), type: 'promo',
       mainText: '', subText: '',
@@ -783,6 +972,12 @@ async function handleImageUpload(e) {
   e.target.value = '';
   if (!file) return;
 
+  // generic 키 업로드 분기 (grid3 / coloroption / detailview)
+  if (uploadGenericSectionId) {
+    await processGenericUpload(file);
+    return;
+  }
+
   // grid2 업로드 분기
   if (uploadGrid2SectionId && !uploadTargetSectionId) {
     await processGrid2Upload(file);
@@ -849,6 +1044,56 @@ function editorUploadGrid2(sectionId, slot) {
   uploadTargetSectionId = null;
   selectSection(sectionId);
   document.getElementById('imageFileInput').click();
+}
+
+// ── Generic 키 기반 업로드 (grid3 / coloroption / detailview) ─
+let uploadGenericSectionId = null;
+let uploadGenericKey       = null;
+
+function triggerGenericUpload(sectionId, key) {
+  uploadGenericSectionId = sectionId;
+  uploadGenericKey       = key;
+  uploadTargetSectionId  = null;
+  uploadGrid2SectionId   = null;
+  document.getElementById('imageFileInput').click();
+}
+
+async function processGenericUpload(file) {
+  const sid = uploadGenericSectionId;
+  const key = uploadGenericKey;
+  uploadGenericSectionId = null;
+  uploadGenericKey       = null;
+  if (!sid || !key) return;
+  showToast('이미지 업로드 중...', 'info');
+  try {
+    let url;
+    if (CONFIG.SUPABASE_ANON_KEY) {
+      try { url = await uploadImage(file, 'sections'); }
+      catch { url = await fileToBase64(file); showToast('스토리지 미설정 → 임시 저장', 'warning'); }
+    } else {
+      url = await fileToBase64(file);
+    }
+    updateSectionAndRender(sid, key, url);
+    renderPropPanel();
+    showToast('이미지 적용 완료!', 'success');
+  } catch (err) {
+    showToast('업로드 실패: ' + err.message, 'error');
+  }
+}
+
+// 캔버스 드롭 — Generic 키
+async function handleCanvasDropGeneric(event, sectionId, key) {
+  event.preventDefault();
+  event.stopPropagation();
+  event.currentTarget.style.outline = '';
+  event.currentTarget.style.opacity = '';
+  const file = Array.from(event.dataTransfer.files).find(f => f.type.startsWith('image/'));
+  if (!file) { showToast('이미지 파일을 드롭해 주세요.', 'error'); return; }
+  uploadGenericSectionId = sectionId;
+  uploadGenericKey       = key;
+  uploadTargetSectionId  = null;
+  uploadGrid2SectionId   = null;
+  await processGenericUpload(file);
 }
 
 // 캔버스 이미지 영역 드래그앤드롭 (slot=0: 단일 이미지, slot=1/2: grid2)

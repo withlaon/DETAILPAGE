@@ -36,7 +36,7 @@ const TEMPLATES = [
         imageUrl: '', bgColor: '#ffffff', padding: 16, radius: 10,
         subText: '일상에 특별함을 더하다',
         brandText: 'Withlaon',
-        textColor: '#ffffff', gradStop: 42, gradColor: 'rgba(109,40,217,0.55)',
+        textColor: '#ffffff', gradStop: 42, gradColor: 'rgba(167,139,250,0.32)',
         label: '대표 컷 (3:4 비율)' },
 
       // ② 홍보문구 — subText 단일 필드, 진한 회색
@@ -50,10 +50,30 @@ const TEMPLATES = [
       { id: 's3', type: 'image',
         imageUrl: '', bgColor: '#ffffff', padding: 20, label: '상품 이미지 1' },
 
-      // ④ 이미지 2장 — 2단 그리드 + 여백
+      // ④ 이미지 2장 — 2단 그리드
       { id: 's4', type: 'grid2',
-        imageUrl1: '', imageUrl2: '', bgColor: '#ffffff', gap: 8, padding: 20,
+        imageUrl1: '', imageUrl2: '', bgColor: '#ffffff', gap: 8, padding: 0,
         label1: '상품 이미지 2', label2: '상품 이미지 3' },
+
+      // ④-1 이미지 3장 — 3단 그리드 (상품이미지3)
+      { id: 's4b', type: 'grid3',
+        imageUrl1: '', imageUrl2: '', imageUrl3: '',
+        label1: '상품 이미지 4', label2: '상품 이미지 5', label3: '상품 이미지 6',
+        bgColor: '#ffffff', gap: 4, padding: 0 },
+
+      // ④-2 컬러 옵션 이미지 — Color Options
+      { id: 's4c', type: 'coloroption',
+        title: 'Color Options', cols: 4, gap: 12,
+        imageUrl1:'', name1:'', imageUrl2:'', name2:'',
+        imageUrl3:'', name3:'', imageUrl4:'', name4:'',
+        imageUrl5:'', name5:'', imageUrl6:'', name6:'',
+        bgColor: '#faf8ff', paddingV: 36, paddingH: 24 },
+
+      // ④-3 디테일 컷 — Detail View
+      { id: 's4d', type: 'detailview',
+        title: 'Detail View', gap: 6,
+        imageUrl1:'', imageUrl2:'', imageUrl3:'', imageUrl4:'',
+        bgColor: '#ffffff', paddingV: 20, paddingH: 20 },
 
       // ⑤ 이미지 1장
       { id: 's5', type: 'image',
