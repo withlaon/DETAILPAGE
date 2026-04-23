@@ -330,13 +330,15 @@ function renderSectionHTML(section) {
     const textOverlay = hasText ? `
       <div style="position:absolute;bottom:0;left:0;right:0;z-index:3;pointer-events:none;
         background:linear-gradient(to bottom, transparent 0%, ${gradColor} ${gradStop}%, ${gradColor} 100%);
-        padding:80px 28px 30px;text-align:center;">
-        ${subText ? `<p style="font-size:18px;color:${textColor};margin:0 0 10px;
-          font-weight:700;letter-spacing:0.05em;text-shadow:0 1px 4px rgba(0,0,0,0.3);
+        padding:80px 24px 28px;text-align:left;">
+        ${brandText ? `<p style="font-size:32px;color:${textColor};margin:0 0 8px;
+          font-weight:900;letter-spacing:0.03em;text-transform:uppercase;
+          text-shadow:0 2px 8px rgba(0,0,0,0.25);
+          font-family:'Noto Sans KR',sans-serif;line-height:1.15;">${brandText}</p>` : ''}
+        ${subText ? `<p style="font-size:14px;color:${textColor};margin:0;
+          font-weight:400;letter-spacing:0.04em;opacity:0.92;
+          text-shadow:0 1px 4px rgba(0,0,0,0.2);
           font-family:'Noto Sans KR',sans-serif;">${subText}</p>` : ''}
-        ${brandText ? `<p style="font-size:30px;color:${textColor};margin:0;
-          font-family:'Great Vibes','Dancing Script',cursive;
-          text-shadow:0 1px 6px rgba(0,0,0,0.25);letter-spacing:0.02em;">${brandText}</p>` : ''}
       </div>` : '';
 
     // 이미지 있을 때 드롭 오버레이 (z-index:4)
@@ -391,11 +393,18 @@ function renderSectionHTML(section) {
     const align    = section.textAlign || 'center';
     const isEmpty  = !rawSub;
 
+    const brandLabel = `<p style="font-size:10px;font-weight:700;color:#7c3aed;letter-spacing:0.18em;
+      margin:0 0 14px;font-family:'Noto Sans KR',sans-serif;text-transform:uppercase;
+      ${align==='center'?'text-align:center;':align==='right'?'text-align:right;':'text-align:left;'}">
+      Brand Philosophy
+    </p>`;
+
     // 에디터에서 비어있을 때: 클릭 유도
     if (isEmpty && isEditor) {
       return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;text-align:center;
         border:2px dashed #d4b3fa;cursor:pointer;"
         onclick="event.stopPropagation();selectSection('${id}');setTimeout(()=>document.querySelector('#propPanel textarea')?.focus(),100)">
+        ${brandLabel}
         <p style="font-size:14px;color:#c4b5d0;margin:0;font-family:'Noto Sans KR',sans-serif;">
           ✏️ 오른쪽 패널에서 홍보 문구를 입력하세요
         </p>
@@ -403,8 +412,9 @@ function renderSectionHTML(section) {
     }
 
     return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;text-align:${align};">
+      ${brandLabel}
       <div style="width:30px;height:2px;background:${lineColor};
-        margin:0 ${align==='center'?'auto':align==='right'?'0 0 0 auto':'0'} 18px;"></div>
+        margin:0 ${align==='center'?'auto':align==='right'?'0 0 0 auto':'0'} 14px;"></div>
       <p style="font-size:${subSize}px;color:${subColor};margin:0;
         line-height:1.9;font-family:'Noto Sans KR',sans-serif;font-weight:500;">${promoTxt}</p>
     </div>`;

@@ -304,11 +304,20 @@ function createNewPage() {
     return;
   }
   const tpl = TEMPLATES.find(t => t.id === selectedTemplate) || TEMPLATES[0];
-  const newPage = {
-    title,
-    category,
-    sections: deepClone(tpl.sections).map(s => ({ ...s, id: generateId() })),
-  };
+  const sections = deepClone(tpl.sections).map(s => ({ ...s, id: generateId() }));
+
+  // 카테고리별 대표컷 텍스트 자동 적용
+  const heroText = CATEGORY_HERO_TEXT[category];
+  if (heroText) {
+    sections.forEach(s => {
+      if (s.type === 'hero') {
+        s.brandText = heroText.brandText;
+        s.subText   = heroText.subText;
+      }
+    });
+  }
+
+  const newPage = { title, category, sections };
   sessionStorage.setItem('dc_new_page', JSON.stringify(newPage));
   window.location.href = 'editor.html?mode=new';
 }

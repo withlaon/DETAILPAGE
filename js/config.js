@@ -82,8 +82,8 @@ const TEMPLATES = [
       // ① 대표컷 — 3:4 비율 + 하단 다크 그라데이션 + 흰색 텍스트
       { id: 's1', type: 'hero',
         imageUrl: '', bgColor: '#ffffff', padding: 16, radius: 10,
-        subText: '일상에 특별함을 더하다',
-        brandText: 'Withlaon Bag',
+        subText: '일상에 특별함을 더하는 데일리 아이템',
+        brandText: 'Withlaon Daily Bag',
         textColor: '#ffffff', gradStop: 42, gradColor: 'rgba(167,139,250,0.32)',
         label: '대표 컷 (3:4 비율)' },
 
@@ -186,6 +186,14 @@ const TEMPLATES = [
     ]
   }
 ];
+
+// 카테고리별 대표컷 기본 텍스트
+const CATEGORY_HERO_TEXT = {
+  '가방': { brandText: 'Withlaon Daily Bag', subText: '일상에 특별함을 더하는 데일리 아이템' },
+  '모자': { brandText: 'Withlaon Daily Hat', subText: '일상에 특별함을 더하는 데일리 아이템' },
+  '양산': { brandText: 'Withlaon Daily Hat', subText: '일상에 특별함을 더하는 데일리 아이템' },
+  '의류': { brandText: 'Withlaon Daily Wear', subText: '일상에 특별함을 더하는 데일리 아이템' },
+};
 
 // Supabase 클라이언트 초기화
 function initSupabase() {
