@@ -52,7 +52,7 @@ const TEMPLATES = [
 
       // ④ 이미지 2장 — 2단 그리드
       { id: 's4', type: 'grid2',
-        imageUrl1: '', imageUrl2: '', bgColor: '#ffffff', gap: 8, padding: 0,
+        imageUrl1: '', imageUrl2: '', bgColor: '#ffffff', gap: 8, padding: 20,
         label1: '상품 이미지 2', label2: '상품 이미지 3' },
 
       // ④-1 이미지 3장 — 3단 그리드 (상품이미지3)
@@ -64,34 +64,38 @@ const TEMPLATES = [
 
       // ④-2 컬러 옵션 — 1장 / 2장 / 3장 (각 독립 섹션)
       { id: 's4c1', type: 'coloroption',
-        title: 'Color Options', cols: 1, gap: 12,
+        label: '컬러 옵션 1 (1장)', title: 'Color Options', cols: 1, gap: 12,
         imageUrl1:'', name1:'',
         bgColor: '#faf8ff', paddingV: 36, paddingH: 24 },
       { id: 's4c2', type: 'coloroption',
-        title: 'Color Options', cols: 2, gap: 12,
+        label: '컬러 옵션 2 (2장)', title: 'Color Options', cols: 2, gap: 12,
         imageUrl1:'', name1:'', imageUrl2:'', name2:'',
         bgColor: '#faf8ff', paddingV: 36, paddingH: 24 },
       { id: 's4c3', type: 'coloroption',
-        title: 'Color Options', cols: 3, gap: 12,
+        label: '컬러 옵션 3 (3장)', title: 'Color Options', cols: 3, gap: 12,
         imageUrl1:'', name1:'', imageUrl2:'', name2:'', imageUrl3:'', name3:'',
         bgColor: '#faf8ff', paddingV: 36, paddingH: 24 },
 
-      // ④-3 디테일 컷 — Detail View (2장)
-      { id: 's4d', type: 'detailview',
-        title: 'Detail View', count: 2, gap: 6,
+      // ④-3 디테일 컷 1 (한 줄 2장) / 디테일 컷 2 (한 줄 3장)
+      { id: 's4d1', type: 'detailview',
+        label: '디테일 컷 1', title: 'Detail View', count: 2, perRow: 2, gap: 6,
         imageUrl1:'', imageUrl2:'',
+        bgColor: '#ffffff', paddingV: 20, paddingH: 20 },
+      { id: 's4d2', type: 'detailview',
+        label: '디테일 컷 2', title: 'Detail View', count: 3, perRow: 3, gap: 6,
+        imageUrl1:'', imageUrl2:'', imageUrl3:'',
         bgColor: '#ffffff', paddingV: 20, paddingH: 20 },
 
       // ⑤ 모델 핏 (Model Fit) — 3:4 비율, 기본 1장
       { id: 's5', type: 'modelfit',
         title: 'Model Fit', count: 1, perRow: 2, gap: 4,
-        bgColor: '#ffffff', paddingV: 16, paddingH: 0,
+        bgColor: '#ffffff', paddingV: 16, paddingH: 20,
         imageUrl1: '' },
 
       // 사이즈 정보
       { id: 's10', type: 'spacer', height: 8, bgColor: '#f5f5f5' },
       { id: 's11', type: 'sizeinfo',
-        title: 'SIZE INFORMATION', imageUrl: '', bgColor: '#f0eeff', padding: 24,
+        title: 'SIZE INFORMATION', imageUrl: '', bgColor: '#f5f5f5', padding: 24,
         m1Label: '가로', m1Value: '- cm', m2Label: '세로', m2Value: '- cm',
         m3Label: '높이', m3Value: '- cm', m4Label: '손잡이', m4Value: '- cm',
         weight: '- g', material: '-' },

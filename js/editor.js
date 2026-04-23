@@ -190,11 +190,9 @@ function renderCanvas() {
       </div>` : ''}
     </div>`;
   }).join('') + `
-  <div id="dc-fixed-footer" style="padding:18px 20px;text-align:center;
-    background:linear-gradient(to right,#f5f0ff,#ede9ff,#f5f0ff);
-    border-top:1px solid #e4dcff;">
-    <p style="font-size:12px;color:#9d88c8;font-family:'Great Vibes','Dancing Script',cursive;
-      font-size:16px;margin:0;letter-spacing:0.04em;">Made by WithLaon Studio</p>
+  <div id="dc-fixed-footer" style="padding:18px 20px;text-align:center;">
+    <p style="font-size:13px;color:#666666;font-family:'Noto Sans KR',sans-serif;
+      margin:0;letter-spacing:0.06em;font-weight:400;">Made by WithLaon Studio</p>
   </div>`;
 }
 
@@ -680,11 +678,19 @@ function renderColorOptionProps(sec) {
 // ── 속성 패널: 디테일 컷 ───────────────────────
 function renderDetailViewProps(sec) {
   const panel = document.getElementById('propPanel');
-  const mkUploadZone = (i) => {
+  const count  = sec.count  || 2;
+  const perRow = sec.perRow || 2;
+
+  let slots = '';
+  for (let i = 1; i <= count; i++) {
     const key = `imageUrl${i}`;
-    return `
+    slots += `
     <div class="prop-section border-t border-violet-100">
-      <label class="prop-label">디테일 이미지 ${i}</label>
+      <div class="flex items-center justify-between mb-2">
+        <label class="prop-label !mb-0">이미지 ${i}</label>
+        <button onclick="removeDetailViewSlot('${sec.id}',${i})"
+          class="text-xs text-rose-400 hover:text-rose-600 px-2 py-0.5 border border-rose-200 rounded">✕ 삭제</button>
+      </div>
       ${sec[key] ? `<img src="${sec[key]}" class="w-full rounded-lg mb-2 object-cover max-h-20">` : ''}
       <div class="upload-zone" onclick="triggerGenericUpload('${sec.id}','${key}')"
            ondragover="event.preventDefault();this.classList.add('dragover')"
@@ -693,7 +699,8 @@ function renderDetailViewProps(sec) {
         <p class="text-xs text-violet-600 font-medium">클릭 또는 드래그</p>
       </div>
     </div>`;
-  };
+  }
+
   panel.innerHTML = `
     <div class="px-4 py-3 bg-violet-50 border-b border-violet-100">
       <span class="text-sm font-bold text-violet-800">디테일 컷 섹션</span>
@@ -703,7 +710,14 @@ function renderDetailViewProps(sec) {
       <input type="text" class="prop-input" value="${sec.title||'Detail View'}"
         oninput="updateSectionAndRender('${sec.id}','title',this.value)">
     </div>
-    ${mkUploadZone(1)}${mkUploadZone(2)}
+    ${slots}
+    <div class="prop-section">
+      <button onclick="addDetailViewSlot('${sec.id}')"
+        class="w-full py-2 text-sm font-semibold text-violet-600 border-2 border-dashed border-violet-300
+          rounded-lg hover:bg-violet-50 transition-colors">
+        + 이미지 슬롯 추가
+      </button>
+    </div>
     <div class="prop-section">
       <label class="prop-label">간격: <span id="dvGapVal">${sec.gap||6}</span>px</label>
       <input type="range" min="0" max="20" value="${sec.gap||6}"
@@ -765,6 +779,25 @@ function removeModelFitSlot(sectionId, idx) {
   markUnsaved(); renderCanvas(); renderPropPanel();
 }
 
+// ── 슬롯 동적 관리: 디테일 컷 ─────────────────
+function addDetailViewSlot(sectionId) {
+  const sec = pageData.sections.find(s => s.id === sectionId);
+  if (!sec) return;
+  sec.count = (sec.count || 2) + 1;
+  markUnsaved(); renderCanvas(); renderPropPanel();
+}
+function removeDetailViewSlot(sectionId, idx) {
+  const sec = pageData.sections.find(s => s.id === sectionId);
+  if (!sec || (sec.count || 2) <= 1) return;
+  const count = sec.count || 2;
+  for (let i = idx; i < count; i++) {
+    sec[`imageUrl${i}`] = sec[`imageUrl${i+1}`] || '';
+  }
+  delete sec[`imageUrl${count}`];
+  sec.count = count - 1;
+  markUnsaved(); renderCanvas(); renderPropPanel();
+}
+
 // ── 속성 패널: 모델 핏 ──────────────────────────
 function renderModelFitProps(sec) {
   const panel = document.getElementById('propPanel');
@@ -803,7 +836,7 @@ function renderModelFitProps(sec) {
     <div class="prop-section">
       <label class="prop-label">한 줄 이미지 수</label>
       <div class="flex gap-2">
-        ${[1,2,3].map(n=>`<button class="flex-1 py-1.5 text-xs rounded border ${perRow===n?'border-violet-500 bg-violet-50 text-violet-700':'border-slate-200 text-slate-600'}"
+        ${[1,2].map(n=>`<button class="flex-1 py-1.5 text-xs rounded border ${perRow===n?'border-violet-500 bg-violet-50 text-violet-700':'border-slate-200 text-slate-600'}"
           onclick="updateSectionAndRender('${sec.id}','perRow',${n});renderPropPanel()">${n}개</button>`).join('')}
       </div>
     </div>
@@ -1052,11 +1085,11 @@ function addSection(type) {
   let newSec;
   if (type === 'modelfit') {
     newSec = { id: generateId(), type: 'modelfit', title: 'Model Fit',
-      count: 2, perRow: 2, gap: 4, bgColor: '#ffffff', paddingV: 16, paddingH: 0,
+      count: 2, perRow: 2, gap: 4, bgColor: '#ffffff', paddingV: 16, paddingH: 20,
       imageUrl1: '', imageUrl2: '' };
   } else if (type === 'sizeinfo') {
     newSec = { id: generateId(), type: 'sizeinfo', title: 'SIZE INFORMATION',
-      imageUrl: '', bgColor: '#f0eeff', padding: 24,
+      imageUrl: '', bgColor: '#f5f5f5', padding: 24,
       m1Label: '가로', m1Value: '- cm', m2Label: '세로', m2Value: '- cm',
       m3Label: '높이', m3Value: '- cm', m4Label: '손잡이', m4Value: '- cm',
       weight: '- g', material: '-' };
@@ -1074,8 +1107,8 @@ function addSection(type) {
       bgColor: '#ffffff', paddingV: 32, paddingH: 24 };
   } else if (type === 'detailview') {
     newSec = { id: generateId(), type: 'detailview',
-      title: 'Detail View', gap: 6,
-      imageUrl1:'', imageUrl2:'', imageUrl3:'', imageUrl4:'',
+      title: 'Detail View', count: 2, perRow: 2, gap: 6,
+      imageUrl1:'', imageUrl2:'',
       bgColor: '#ffffff', paddingV: 20, paddingH: 20 };
   } else if (type === 'hero') {
     newSec = { id: generateId(), type: 'hero', imageUrl: '', bgColor: '#ffffff', padding: 16, radius: 10,

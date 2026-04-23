@@ -551,15 +551,18 @@ function renderSectionHTML(section) {
     const ph    = section.paddingH !== undefined ? section.paddingH : 20;
     const title = section.title    || 'Detail View';
     const gap   = section.gap      !== undefined ? section.gap : 6;
-    // count 기반 동적 행 생성 (기본 2장, 한 행당 2개)
-    const count = Math.max(section.count || 2, 1);
-    const pairs = [];
-    for (let r = 0; r < count; r += 2) {
-      pairs.push([r + 1, r + 2 <= count ? r + 2 : null].filter(Boolean));
+    // count 기반 동적 행 생성 (perRow 에 따라 한 행당 이미지 수 결정)
+    const perRow = section.perRow || 2;
+    const count  = Math.max(section.count || perRow, 1);
+    const rows   = [];
+    for (let r = 0; r < count; r += perRow) {
+      const row = [];
+      for (let c = 0; c < perRow && r + c < count; c++) row.push(r + c + 1);
+      rows.push(row);
     }
 
-    const rowsHtml = pairs.map(pair => {
-      const cells = pair.map(i => {
+    const rowsHtml = rows.map(row => {
+      const cells = row.map(i => {
         const imgUrl = section[`imageUrl${i}`] || '';
         const lbl    = `디테일 ${i}`;
         const clickA = isEditor ? `onclick="event.stopPropagation();triggerGenericUpload('${id}','imageUrl${i}')"` : '';
@@ -573,8 +576,8 @@ function renderSectionHTML(section) {
             : _imgPlaceholder(lbl, clickA, 220, dropA)}
         </div>`;
       });
-      // 마지막 행이 홀수면 빈 칸으로 채움
-      if (cells.length < 2) cells.push(`<div style="flex:1;min-width:0;"></div>`);
+      // 마지막 행이 부족하면 빈 칸으로 채움
+      while (cells.length < perRow) cells.push(`<div style="flex:1;min-width:0;"></div>`);
       return `<div style="display:flex;gap:${gap}px;">${cells.join('')}</div>`;
     }).join(`<div style="height:${gap}px;"></div>`);
 
