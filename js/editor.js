@@ -189,7 +189,13 @@ function renderCanvas() {
         </span>
       </div>` : ''}
     </div>`;
-  }).join('');
+  }).join('') + `
+  <div id="dc-fixed-footer" style="padding:18px 20px;text-align:center;
+    background:linear-gradient(to right,#f5f0ff,#ede9ff,#f5f0ff);
+    border-top:1px solid #e4dcff;">
+    <p style="font-size:12px;color:#9d88c8;font-family:'Great Vibes','Dancing Script',cursive;
+      font-size:16px;margin:0;letter-spacing:0.04em;">Made by WithLaon Studio</p>
+  </div>`;
 }
 
 // ── 섹션 선택 ─────────────────────────────────
