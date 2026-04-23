@@ -190,7 +190,7 @@ function renderCanvas() {
       </div>` : ''}
     </div>`;
   }).join('') + `
-  <div id="dc-fixed-footer" style="padding:18px 20px;text-align:center;">
+  <div id="dc-fixed-footer" style="padding:12px 20px 5px;text-align:center;">
     <p style="font-size:13px;color:#666666;font-family:'Noto Sans KR',sans-serif;
       margin:0;letter-spacing:0.06em;font-weight:400;">Made by WithLaon Studio</p>
   </div>`;
@@ -615,10 +615,10 @@ function renderGrid3Props(sec) {
 // ── 속성 패널: 컬러 옵션 ───────────────────────
 function renderColorOptionProps(sec) {
   const panel = document.getElementById('propPanel');
-  const cols = sec.cols || 4;
+  const cols = sec.cols || 1;
 
   let itemRows = '';
-  for (let i = 1; i <= Math.min(cols, 6); i++) {
+  for (let i = 1; i <= cols; i++) {
     const key = `imageUrl${i}`;
     const nameKey = `name${i}`;
     itemRows += `
@@ -643,7 +643,7 @@ function renderColorOptionProps(sec) {
 
   panel.innerHTML = `
     <div class="px-4 py-3 bg-fuchsia-50 border-b border-fuchsia-100">
-      <span class="text-sm font-bold text-fuchsia-800">컬러 옵션 섹션 (${cols}개)</span>
+      <span class="text-sm font-bold text-fuchsia-800">컬러 옵션 섹션 (현재 ${cols}개)</span>
     </div>
     <div class="prop-section">
       <label class="prop-label">제목 텍스트</label>
@@ -652,10 +652,10 @@ function renderColorOptionProps(sec) {
     </div>
     ${itemRows}
     <div class="prop-section">
-      <button onclick="addColorOptionSlot('${sec.id}')" ${cols>=6?'disabled style="opacity:0.4;"':''}
+      <button onclick="addColorOptionSlot('${sec.id}')"
         class="w-full py-2 text-sm font-semibold text-fuchsia-600 border-2 border-dashed border-fuchsia-300
           rounded-lg hover:bg-fuchsia-50 transition-colors">
-        + 옵션 슬롯 추가 (최대 6개)
+        + 옵션 슬롯 추가
       </button>
     </div>
     <div class="prop-section">
@@ -743,7 +743,7 @@ function renderDetailViewProps(sec) {
 // ── 슬롯 동적 관리: 컬러 옵션 ─────────────────
 function addColorOptionSlot(sectionId) {
   const sec = pageData.sections.find(s => s.id === sectionId);
-  if (!sec || (sec.cols || 4) >= 6) return;
+  if (!sec) return;
   sec.cols = (sec.cols || 4) + 1;
   markUnsaved(); renderCanvas(); renderPropPanel();
 }
@@ -1085,8 +1085,8 @@ function addSection(type) {
   let newSec;
   if (type === 'modelfit') {
     newSec = { id: generateId(), type: 'modelfit', title: 'Model Fit',
-      count: 2, perRow: 2, gap: 4, bgColor: '#ffffff', paddingV: 16, paddingH: 20,
-      imageUrl1: '', imageUrl2: '' };
+      count: 1, perRow: 1, gap: 4, bgColor: '#ffffff', paddingV: 16, paddingH: 20,
+      imageUrl1: '' };
   } else if (type === 'sizeinfo') {
     newSec = { id: generateId(), type: 'sizeinfo', title: 'SIZE INFORMATION',
       imageUrl: '', bgColor: '#f5f5f5', padding: 24,
@@ -1100,14 +1100,12 @@ function addSection(type) {
       bgColor: '#ffffff', gap: 4, padding: 0 };
   } else if (type === 'coloroption') {
     newSec = { id: generateId(), type: 'coloroption',
-      title: 'Color Options', cols: 4, gap: 12,
-      imageUrl1:'', name1:'', imageUrl2:'', name2:'',
-      imageUrl3:'', name3:'', imageUrl4:'', name4:'',
-      imageUrl5:'', name5:'', imageUrl6:'', name6:'',
+      title: 'Color Options', cols: 1, gap: 12,
+      imageUrl1:'', name1:'',
       bgColor: '#ffffff', paddingV: 32, paddingH: 24 };
   } else if (type === 'detailview') {
     newSec = { id: generateId(), type: 'detailview',
-      title: 'Detail View', count: 2, perRow: 2, gap: 6,
+      title: 'Detail View', count: 2, gap: 6,
       imageUrl1:'', imageUrl2:'',
       bgColor: '#ffffff', paddingV: 20, paddingH: 20 };
   } else if (type === 'hero') {

@@ -35,7 +35,7 @@ const TEMPLATES = [
       { id: 's1', type: 'hero',
         imageUrl: '', bgColor: '#ffffff', padding: 16, radius: 10,
         subText: '일상에 특별함을 더하다',
-        brandText: 'Withlaon',
+        brandText: 'Withlaon Bag',
         textColor: '#ffffff', gradStop: 42, gradColor: 'rgba(167,139,250,0.32)',
         label: '대표 컷 (3:4 비율)' },
 
@@ -62,44 +62,30 @@ const TEMPLATES = [
         label1: '이미지 1', label2: '이미지 2', label3: '이미지 3',
         bgColor: '#ffffff', gap: 4, padding: 20 },
 
-      // ④-2 컬러 옵션 — 1장 / 2장 / 3장 (각 독립 섹션)
+      // ④-2 컬러 옵션 (동적 슬롯, 최대 3열)
       { id: 's4c1', type: 'coloroption',
-        label: '컬러 옵션 1 (1장)', title: 'Color Options', cols: 1, gap: 12,
+        label: '컬러 옵션', title: 'Color Options', cols: 1, gap: 12,
         imageUrl1:'', name1:'',
         bgColor: '#faf8ff', paddingV: 36, paddingH: 24 },
-      { id: 's4c2', type: 'coloroption',
-        label: '컬러 옵션 2 (2장)', title: 'Color Options', cols: 2, gap: 12,
-        imageUrl1:'', name1:'', imageUrl2:'', name2:'',
-        bgColor: '#faf8ff', paddingV: 36, paddingH: 24 },
-      { id: 's4c3', type: 'coloroption',
-        label: '컬러 옵션 3 (3장)', title: 'Color Options', cols: 3, gap: 12,
-        imageUrl1:'', name1:'', imageUrl2:'', name2:'', imageUrl3:'', name3:'',
-        bgColor: '#faf8ff', paddingV: 36, paddingH: 24 },
 
-      // ④-3 디테일 컷 1 (한 줄 2장) / 디테일 컷 2 (한 줄 3장)
+      // ④-3 디테일 컷 (동적 슬롯)
       { id: 's4d1', type: 'detailview',
-        label: '디테일 컷 1', title: 'Detail View', count: 2, perRow: 2, gap: 6,
+        label: '디테일 컷', title: 'Detail View', count: 2, gap: 6,
         imageUrl1:'', imageUrl2:'',
-        bgColor: '#ffffff', paddingV: 20, paddingH: 20 },
-      { id: 's4d2', type: 'detailview',
-        label: '디테일 컷 2', title: 'Detail View', count: 3, perRow: 3, gap: 6,
-        imageUrl1:'', imageUrl2:'', imageUrl3:'',
         bgColor: '#ffffff', paddingV: 20, paddingH: 20 },
 
       // ⑤ 모델 핏 (Model Fit) — 3:4 비율, 기본 1장
       { id: 's5', type: 'modelfit',
-        title: 'Model Fit', count: 1, perRow: 2, gap: 4,
+        title: 'Model Fit', count: 1, perRow: 1, gap: 4,
         bgColor: '#ffffff', paddingV: 16, paddingH: 20,
         imageUrl1: '' },
 
       // 사이즈 정보
-      { id: 's10', type: 'spacer', height: 8, bgColor: '#f5f5f5' },
       { id: 's11', type: 'sizeinfo',
-        title: 'SIZE INFORMATION', imageUrl: '', bgColor: '#f5f5f5', padding: 24,
+        title: 'SIZE INFORMATION', imageUrl: '', bgColor: '#ffffff', padding: 24,
         m1Label: '가로', m1Value: '- cm', m2Label: '세로', m2Value: '- cm',
         m3Label: '높이', m3Value: '- cm', m4Label: '손잡이', m4Value: '- cm',
         weight: '- g', material: '-' },
-      { id: 's12', type: 'spacer', height: 8, bgColor: '#f5f5f5' },
     ]
   },
   {

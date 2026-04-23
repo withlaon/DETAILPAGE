@@ -229,7 +229,7 @@ function _imgPlaceholder(label, clickAttr, minH, dropAttrs) {
   return `<div ${clickAttr || ''} ${drag}
     style="background:#f5f5f5;min-height:${h}px;display:flex;
     flex-direction:column;align-items:center;justify-content:center;
-    color:#c0c0c0;border:2px dashed #e0e0e0;width:100%;${cursor}
+    color:#c0c0c0;border:2px dashed #e0e0e0;width:100%;border-radius:10px;${cursor}
     transition:background 0.15s,border-color 0.15s;"
     ${clickAttr ? `onmouseenter="this.style.background='#eef2ff';this.style.borderColor='#818cf8'"
     onmouseleave="this.style.background='#f5f5f5';this.style.borderColor='#e0e0e0'"` : ''}>
@@ -249,10 +249,10 @@ function _imgPlaceholder(label, clickAttr, minH, dropAttrs) {
 function _imgWithOverlay(src, alt, clickAttr, dropAttrs) {
   const drag = dropAttrs || '';
   if (!clickAttr && !drag) {
-    return `<img src="${src}" style="width:100%;display:block;" alt="${alt||''}">`;
+    return `<img src="${src}" style="width:100%;display:block;border-radius:10px;" alt="${alt||''}">`;
   }
-  return `<div style="position:relative;line-height:0;">
-    <img src="${src}" style="width:100%;display:block;" alt="${alt||''}">
+  return `<div style="position:relative;line-height:0;border-radius:10px;overflow:hidden;">
+    <img src="${src}" style="width:100%;display:block;border-radius:10px;" alt="${alt||''}">
     <div ${clickAttr || ''} ${drag}
       style="position:absolute;inset:0;background:transparent;display:flex;align-items:center;
         justify-content:center;cursor:pointer;transition:background 0.2s;"
@@ -488,11 +488,18 @@ function renderSectionHTML(section) {
     const pv    = section.paddingV !== undefined ? section.paddingV : 32;
     const ph    = section.paddingH !== undefined ? section.paddingH : 24;
     const title = section.title    || 'Color Options';
-    const cols  = Math.min(Math.max(section.cols || 4, 1), 6);
+    const cols  = Math.max(section.cols || 1, 1);
     const gap   = section.gap      !== undefined ? section.gap : 12;
 
-    let cells = '';
-    for (let i = 1; i <= cols; i++) {
+    // 개수에 따라 한 줄 열 수 자동 결정
+    let perRow;
+    if (cols <= 3)       perRow = cols;
+    else if (cols === 4) perRow = 2;
+    else                 perRow = 3;
+
+    const itemW = `calc(${(100 / perRow).toFixed(2)}% - ${gap * (perRow - 1) / perRow}px)`;
+
+    const mkCell = (i) => {
       const imgUrl = section[`imageUrl${i}`] || '';
       const name   = section[`name${i}`]    || '';
       const clickA = isEditor ? `onclick="event.stopPropagation();triggerGenericUpload('${id}','imageUrl${i}')"` : '';
@@ -501,9 +508,9 @@ function renderSectionHTML(section) {
            ondragleave="handleCanvasDragLeave(event,this)"
            ondrop="handleCanvasDropGeneric(event,'${id}','imageUrl${i}')"` : '';
       const imgEl = imgUrl
-        ? `<div ${clickA} ${dropA} style="${isEditor?'cursor:pointer;':''}position:relative;">
-            <img src="${imgUrl}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;border-radius:6px;">
-            ${isEditor ? `<div style="position:absolute;inset:0;background:transparent;border-radius:6px;
+        ? `<div ${clickA} ${dropA} style="${isEditor?'cursor:pointer;':''}position:relative;border-radius:10px;overflow:hidden;">
+            <img src="${imgUrl}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;border-radius:10px;">
+            ${isEditor ? `<div style="position:absolute;inset:0;background:transparent;border-radius:10px;
               display:flex;align-items:center;justify-content:center;transition:background 0.2s;"
               onmouseenter="this.style.background='rgba(109,40,217,0.25)'"
               onmouseleave="this.style.background='transparent'">
@@ -513,7 +520,7 @@ function renderSectionHTML(section) {
           </div>`
         : `<div ${clickA} ${dropA}
             style="width:100%;aspect-ratio:1;background:#f5f5f5;border:2px dashed #ddd;
-              border-radius:6px;display:flex;flex-direction:column;align-items:center;
+              border-radius:10px;display:flex;flex-direction:column;align-items:center;
               justify-content:center;${isEditor?'cursor:pointer;':''}gap:6px;"
             ${isEditor?`onmouseenter="this.style.background='#eef2ff';this.style.borderColor='#7c3aed'"
               onmouseleave="this.style.background='#f5f5f5';this.style.borderColor='#ddd'"`:''}>
@@ -526,13 +533,21 @@ function renderSectionHTML(section) {
             </svg>
             <span style="font-size:10px;color:#bbb;">이미지 업로드</span>
           </div>`;
-      cells += `<div style="flex:1;min-width:0;text-align:center;">
+      return `<div style="width:${itemW};flex:0 0 ${itemW};text-align:center;">
         ${imgEl}
         <p style="font-size:12px;color:#666;margin:8px 0 0;padding:0 2px;
           font-family:'Noto Sans KR',sans-serif;line-height:1.4;">
           ${name || (isEditor ? '<span style="color:#ccc;">옵션명</span>' : '')}
         </p>
       </div>`;
+    };
+
+    // 행 단위로 나누어 렌더링
+    let rowsHtml = '';
+    for (let r = 0; r < cols; r += perRow) {
+      const rowCells = [];
+      for (let c = 0; c < perRow && r + c < cols; c++) rowCells.push(mkCell(r + c + 1));
+      rowsHtml += `<div style="display:flex;gap:${gap}px;justify-content:center;${r > 0 ? `margin-top:${gap}px;` : ''}">${rowCells.join('')}</div>`;
     }
 
     return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;">
@@ -540,7 +555,7 @@ function renderSectionHTML(section) {
         letter-spacing:0.12em;font-family:'Noto Sans KR',sans-serif;">
         — ${title} —
       </p>
-      <div style="display:flex;gap:${gap}px;align-items:flex-start;">${cells}</div>
+      ${rowsHtml}
     </div>`;
   }
 
@@ -551,17 +566,22 @@ function renderSectionHTML(section) {
     const ph    = section.paddingH !== undefined ? section.paddingH : 20;
     const title = section.title    || 'Detail View';
     const gap   = section.gap      !== undefined ? section.gap : 6;
-    // count 기반 동적 행 생성 (perRow 에 따라 한 행당 이미지 수 결정)
-    const perRow = section.perRow || 2;
-    const count  = Math.max(section.count || perRow, 1);
-    const rows   = [];
+    // count 기반 동적 행 생성 — coloroption 과 동일한 perRow 자동 계산
+    const count = Math.max(section.count || 2, 1);
+    let perRow;
+    if (count <= 3)       perRow = count;
+    else if (count === 4) perRow = 2;
+    else                  perRow = 3;
+
+    const rows = [];
     for (let r = 0; r < count; r += perRow) {
       const row = [];
       for (let c = 0; c < perRow && r + c < count; c++) row.push(r + c + 1);
       rows.push(row);
     }
 
-    const rowsHtml = rows.map(row => {
+    const itemW = `calc(${(100 / perRow).toFixed(2)}% - ${gap * (perRow - 1) / perRow}px)`;
+    const rowsHtml = rows.map((row, ri) => {
       const cells = row.map(i => {
         const imgUrl = section[`imageUrl${i}`] || '';
         const lbl    = `디테일 ${i}`;
@@ -570,16 +590,14 @@ function renderSectionHTML(section) {
           ? `ondragover="event.stopPropagation();handleCanvasDragOver(event,this)"
              ondragleave="handleCanvasDragLeave(event,this)"
              ondrop="handleCanvasDropGeneric(event,'${id}','imageUrl${i}')"` : '';
-        return `<div style="flex:1;min-width:0;">
+        return `<div style="width:${itemW};flex:0 0 ${itemW};">
           ${imgUrl
             ? _imgWithOverlay(imgUrl, lbl, clickA, dropA)
             : _imgPlaceholder(lbl, clickA, 220, dropA)}
         </div>`;
       });
-      // 마지막 행이 부족하면 빈 칸으로 채움
-      while (cells.length < perRow) cells.push(`<div style="flex:1;min-width:0;"></div>`);
-      return `<div style="display:flex;gap:${gap}px;">${cells.join('')}</div>`;
-    }).join(`<div style="height:${gap}px;"></div>`);
+      return `<div style="display:flex;gap:${gap}px;justify-content:center;${ri > 0 ? `margin-top:${gap}px;` : ''}">${cells.join('')}</div>`;
+    }).join('');
 
     return `<div id="${id}" style="background:${bg};padding:${pv}px ${ph}px;">
       <p style="font-size:13px;font-weight:700;color:#7c3aed;text-align:center;margin:0 0 16px;
@@ -611,7 +629,7 @@ function renderSectionHTML(section) {
       let inner;
       if (imgUrl) {
         inner = `<div ${clickA} ${dropA}
-          style="position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:4px;${isEditor?'cursor:pointer;':''}">
+          style="position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:10px;${isEditor?'cursor:pointer;':''}">
           <img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;display:block;">
           ${isEditor ? `<div style="position:absolute;inset:0;background:transparent;display:flex;align-items:center;
             justify-content:center;transition:background 0.2s;"
@@ -625,7 +643,7 @@ function renderSectionHTML(section) {
         </div>`;
       } else {
         inner = `<div ${clickA} ${dropA}
-          style="aspect-ratio:3/4;background:#f5f5f5;border:2px dashed #ddd;border-radius:4px;
+          style="aspect-ratio:3/4;background:#f5f5f5;border:2px dashed #ddd;border-radius:10px;
             display:flex;flex-direction:column;align-items:center;justify-content:center;
             gap:8px;${isEditor?'cursor:pointer;':''}"
           ${isEditor?`onmouseenter="this.style.background='#eef2ff';this.style.borderColor='#7c3aed'"
@@ -710,12 +728,12 @@ function renderSectionHTML(section) {
 
     const rowsHtml = mRows.map(r => `
       <div style="display:flex;justify-content:space-between;align-items:center;
-        padding:10px 0;border-bottom:1px solid #e0d8ff;">
+        padding:10px 0;border-bottom:1px solid #e5e7eb;">
         <span style="font-size:14px;color:#666;font-family:'Noto Sans KR',sans-serif;">${r.label}</span>
         <span style="font-size:14px;color:#333;font-weight:600;font-family:'Noto Sans KR',sans-serif;">${r.value}</span>
       </div>`).join('');
 
-    return `<div id="${id}" style="background:${bg};padding:${pad}px;border-radius:18px;margin:12px 0;">
+    return `<div id="${id}" style="background:${bg};padding:${pad}px;">
       <p style="font-size:19px;font-weight:800;color:#7c3aed;text-align:center;margin:0 0 22px;
         letter-spacing:0.08em;font-family:'Noto Sans KR',sans-serif;">${title}</p>
       <div style="display:flex;gap:22px;align-items:flex-start;">
@@ -726,14 +744,14 @@ function renderSectionHTML(section) {
           ${rowsHtml}
           <p style="font-size:11px;font-weight:700;color:#7c3aed;margin:18px 0 10px;
             letter-spacing:0.1em;font-family:'Noto Sans KR',sans-serif;">TECHNICAL SPECS</p>
-          <div style="display:flex;gap:8px;">
-            <div style="flex:1;background:#fff;border-radius:10px;padding:14px;border:1px solid #e0d8ff;">
-              <p style="font-size:10px;color:#aaa;margin:0 0 6px;letter-spacing:0.1em;">WEIGHT</p>
-              <p style="font-size:18px;font-weight:700;color:#333;margin:0;font-family:'Noto Sans KR',sans-serif;">${weight}</p>
+          <div style="display:flex;gap:24px;margin-top:4px;">
+            <div style="flex:1;">
+              <p style="font-size:10px;color:#aaa;margin:0 0 4px;letter-spacing:0.1em;">WEIGHT</p>
+              <p style="font-size:17px;font-weight:900;color:#222;margin:0;font-family:'Noto Sans KR',sans-serif;">${weight}</p>
             </div>
-            <div style="flex:1;background:#7c3aed;border-radius:10px;padding:14px;">
-              <p style="font-size:10px;color:rgba(255,255,255,0.72);margin:0 0 6px;letter-spacing:0.1em;">MATERIAL</p>
-              <p style="font-size:18px;font-weight:700;color:#fff;margin:0;font-family:'Noto Sans KR',sans-serif;">${material}</p>
+            <div style="flex:1;">
+              <p style="font-size:10px;color:#aaa;margin:0 0 4px;letter-spacing:0.1em;">MATERIAL</p>
+              <p style="font-size:17px;font-weight:900;color:#222;margin:0;font-family:'Noto Sans KR',sans-serif;">${material}</p>
             </div>
           </div>
         </div>
