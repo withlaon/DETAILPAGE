@@ -6,6 +6,7 @@ let allPages = [];
 let currentCategory = 'all';
 let selectedTemplate = 'tpl_basic';
 let selectedAIStyle = 'standard';
+let displayLimit = 5;          // 한 번에 표시할 최대 개수
 
 // ── 초기화 ────────────────────────────────────
 
@@ -24,17 +25,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadPages();
 });
 
-// ── 페이지 로드 ───────────────────────────────
+// ── 페이지 로드 (재시도 포함) ─────────────────
 
-async function loadPages() {
+async function loadPages(retries = 2) {
   showLoadingState();
   try {
     allPages = await fetchAllPages();
+    displayLimit = 5;   // 새로 불러올 때 초기화
     renderStatsBoxes();
     renderPages();
   } catch (e) {
-    console.error(e);
-    showEmptyState('데이터를 불러오는 중 오류가 발생했습니다. 설정을 확인하세요.');
+    console.error('loadPages 오류:', e);
+    if (retries > 0) {
+      // 네트워크 일시 오류 → 1.5초 후 자동 재시도
+      setTimeout(() => loadPages(retries - 1), 1500);
+    } else {
+      showErrorState(e.message || '데이터를 불러오지 못했습니다.');
+    }
   }
 }
 
@@ -84,6 +91,7 @@ function renderStatsBoxes() {
 
 function filterByCategory(cat) {
   currentCategory = cat;
+  displayLimit = 5;
   renderStatsBoxes();
   renderCategoryTabs();
   renderPages();
@@ -116,28 +124,49 @@ function renderCategoryTabs() {
 
 function renderPages() {
   const query = document.getElementById('searchInput').value.toLowerCase();
-  const sort = document.getElementById('sortSelect').value;
+  const sort  = document.getElementById('sortSelect').value;
 
   let pages = allPages.filter(p => {
     const matchCat = currentCategory === 'all' || p.category === currentCategory;
-    const matchQ = !query || p.title.toLowerCase().includes(query) || p.category.includes(query);
+    const matchQ   = !query || p.title.toLowerCase().includes(query) || p.category.includes(query);
     return matchCat && matchQ;
   });
 
   pages = pages.sort((a, b) => {
     if (sort === 'newest') return new Date(b.created_at) - new Date(a.created_at);
     if (sort === 'oldest') return new Date(a.created_at) - new Date(b.created_at);
-    if (sort === 'title') return a.title.localeCompare(b.title);
+    if (sort === 'title')  return a.title.localeCompare(b.title);
     return 0;
   });
 
   const grid = document.getElementById('pagesGrid');
   if (pages.length === 0) {
-    showEmptyState(query ? `"${query}" 검색 결과가 없습니다.` : '아직 제작된 상세페이지가 없습니다.\n새 페이지를 만들어 시작해보세요!');
+    showEmptyState(query
+      ? `"${query}" 검색 결과가 없습니다.`
+      : '아직 제작된 상세페이지가 없습니다.\n새 페이지를 만들어 시작해보세요!');
     return;
   }
 
-  grid.innerHTML = pages.map(page => createPageCard(page)).join('');
+  const visible  = pages.slice(0, displayLimit);
+  const hasMore  = pages.length > displayLimit;
+  const remaining = pages.length - displayLimit;
+
+  grid.innerHTML = visible.map(page => createPageCard(page)).join('') +
+    (hasMore ? `
+      <div class="col-span-full flex flex-col items-center gap-2 py-4">
+        <p class="text-xs text-slate-400">${remaining}개 더 있습니다</p>
+        <button onclick="showMorePages()"
+          class="px-6 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold
+            text-slate-600 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600
+            transition-all shadow-sm">
+          더 보기 (+${Math.min(remaining, 5)}개)
+        </button>
+      </div>` : '');
+}
+
+function showMorePages() {
+  displayLimit += 5;
+  renderPages();
 }
 
 function createPageCard(page) {
@@ -198,6 +227,30 @@ function showLoadingState() {
     </div>`).join('');
 }
 
+function showErrorState(msg) {
+  const grid = document.getElementById('pagesGrid');
+  grid.innerHTML = `
+    <div class="col-span-full flex flex-col items-center justify-center py-20 text-center">
+      <div class="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mb-5">
+        <svg class="w-10 h-10 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        </svg>
+      </div>
+      <p class="text-slate-600 text-sm font-semibold mb-1">데이터 불러오기 실패</p>
+      <p class="text-slate-400 text-xs mb-5">${msg}</p>
+      <button onclick="loadPages()"
+        class="px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl
+          hover:bg-indigo-700 transition-colors flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        다시 시도
+      </button>
+    </div>`;
+}
+
 function showEmptyState(msg, isSetup = false) {
   const grid = document.getElementById('pagesGrid');
   grid.innerHTML = `
@@ -216,8 +269,8 @@ function showEmptyState(msg, isSetup = false) {
 // ── 검색 & 정렬 ──────────────────────────────
 
 function setupSearch() {
-  document.getElementById('searchInput').addEventListener('input', () => renderPages());
-  document.getElementById('sortSelect').addEventListener('change', () => renderPages());
+  document.getElementById('searchInput').addEventListener('input', () => { displayLimit = 5; renderPages(); });
+  document.getElementById('sortSelect').addEventListener('change', () => { displayLimit = 5; renderPages(); });
 }
 
 // ── 페이지 편집 ───────────────────────────────
