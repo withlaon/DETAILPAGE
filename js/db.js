@@ -40,12 +40,15 @@ async function fetchAllPages() {
   const sb = getClient();
   if (!sb) throw new Error('Supabase 연결 설정이 필요합니다.');
 
+  // sections 컬럼 제외: base64 이미지가 포함되어 페이지당 수MB에 달해
+  // statement_timeout(Supabase 기본 8초)을 초과하는 원인이 됨.
+  // 대시보드 카드에는 메타데이터만 필요하므로 sections 를 불러오지 않음.
   const query = sb
     .from(CONFIG.TABLE_NAME)
-    .select('id, title, category, sections, thumbnail_url, created_at, updated_at')
+    .select('id, title, category, thumbnail_url, created_at, updated_at')
     .order('created_at', { ascending: false });
 
-  const { data, error } = await withTimeout(query, 20000, '데이터 불러오기');
+  const { data, error } = await withTimeout(query, 15000, '데이터 불러오기');
   if (error) throw new Error(error.message || '데이터베이스 오류가 발생했습니다.');
   return data || [];
 }

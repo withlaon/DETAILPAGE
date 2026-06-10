@@ -27,18 +27,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ── 페이지 로드 (재시도 포함) ─────────────────
 
-async function loadPages(retries = 2) {
-  showLoadingState();
+// 재시도 딜레이(ms): 첫 재시도 3초, 두 번째 5초 (Supabase 콜드스타트 대응)
+const RETRY_DELAYS = [3000, 5000];
+
+async function loadPages(attempt = 0) {
+  showLoadingState(attempt);
   try {
     allPages = await fetchAllPages();
-    displayLimit = 5;   // 새로 불러올 때 초기화
+    displayLimit = 5;
     renderStatsBoxes();
     renderPages();
   } catch (e) {
-    console.error('loadPages 오류:', e);
-    if (retries > 0) {
-      // 네트워크 일시 오류 → 1.5초 후 자동 재시도
-      setTimeout(() => loadPages(retries - 1), 1500);
+    console.error(`loadPages 오류 (시도 ${attempt + 1}):`, e);
+    if (attempt < RETRY_DELAYS.length) {
+      // 자동 재시도
+      const delay = RETRY_DELAYS[attempt];
+      showRetryingState(attempt + 1, delay);
+      setTimeout(() => loadPages(attempt + 1), delay);
     } else {
       showErrorState(e.message || '데이터를 불러오지 못했습니다.');
     }
@@ -171,7 +176,7 @@ function showMorePages() {
 
 function createPageCard(page) {
   const catColor = getCategoryColor(page.category) || 'bg-slate-100 text-slate-600';
-  const sectionCount = Array.isArray(page.sections) ? page.sections.length : 0;
+  const sectionCount = null; // sections는 편집 시에만 로드
   const date = timeAgo(page.updated_at || page.created_at);
 
   const thumb = page.thumbnail_url
@@ -197,7 +202,7 @@ function createPageCard(page) {
         <h3 class="text-sm font-semibold text-slate-800 leading-tight line-clamp-2">${page.title}</h3>
         <span class="shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${catColor}">${page.category}</span>
       </div>
-      <p class="text-xs text-slate-400">${sectionCount}개 섹션 · ${date}</p>
+      <p class="text-xs text-slate-400">${date}</p>
       <div class="flex items-center gap-1.5 mt-2.5 pt-2.5 border-t border-slate-100">
         <button onclick="editPage('${page.id}')" class="flex-1 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
           편집
@@ -215,9 +220,12 @@ function createPageCard(page) {
   </div>`;
 }
 
-function showLoadingState() {
+function showLoadingState(attempt = 0) {
   const grid = document.getElementById('pagesGrid');
-  grid.innerHTML = Array.from({length: 8}, () => `
+  const msg = attempt > 0
+    ? `<div class="col-span-full text-center text-xs text-slate-400 pb-2">서버를 깨우는 중... (${attempt}회 재시도)</div>`
+    : '';
+  grid.innerHTML = msg + Array.from({length: 5}, () => `
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
       <div class="aspect-[3/4] skeleton"></div>
       <div class="p-3 space-y-2">
@@ -225,6 +233,16 @@ function showLoadingState() {
         <div class="h-3 skeleton rounded-lg w-2/3"></div>
       </div>
     </div>`).join('');
+}
+
+function showRetryingState(attempt, delayMs) {
+  const grid = document.getElementById('pagesGrid');
+  grid.innerHTML = `
+    <div class="col-span-full flex flex-col items-center justify-center py-16 text-center gap-3">
+      <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-500 rounded-full animate-spin"></div>
+      <p class="text-slate-500 text-sm font-medium">서버를 깨우는 중입니다…</p>
+      <p class="text-slate-400 text-xs">${delayMs / 1000}초 후 재시도 (${attempt}/${RETRY_DELAYS.length}회)</p>
+    </div>`;
 }
 
 function showErrorState(msg) {
