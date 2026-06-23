@@ -769,15 +769,15 @@ function renderSectionHTML(section) {
             }
           }
           return `<span ${clickA}
-            style="font-size:13px;font-family:'Noto Sans KR',sans-serif;
+            style="font-size:15px;font-family:'Noto Sans KR',sans-serif;
               display:inline-flex;align-items:center;gap:2px;
               ${active ? 'font-weight:700;color:#1a1a1a;' : 'color:#bbb;'}
               ${isEditor ? 'cursor:pointer;user-select:none;' : ''}">
-            <span style="font-size:11px;line-height:1;">${active ? '■' : '□'}</span>${opt}
+            <span style="font-size:12px;line-height:1;">${active ? '■' : '□'}</span>${opt}
           </span>`;
-        }).join('<span style="color:#e0e0e0;margin:0 3px;font-size:11px;">|</span>');
+        }).join('<span style="color:#e0e0e0;margin:0 3px;font-size:12px;">|</span>');
         return `<div style="display:flex;align-items:center;padding:8px 4px;border-bottom:1px solid #f5f5f5;">
-          <span style="font-size:13px;font-weight:600;color:#555;min-width:60px;
+          <span style="font-size:15px;font-weight:600;color:#555;min-width:64px;
             font-family:'Noto Sans KR',sans-serif;">${label}</span>
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${optSpans}</div>
         </div>`;
@@ -839,8 +839,8 @@ function renderSectionHTML(section) {
           </div>`;
 
       return `<div id="${id}" style="background:${bg2};padding:${pad2}px;">
-        <p style="font-size:26px;font-weight:800;color:#1a1a1a;text-align:center;margin:0 0 20px;
-          font-family:'Noto Sans KR',sans-serif;">Size Information</p>
+        <p style="font-size:26px;font-weight:800;color:#7c3aed;text-align:center;margin:0 0 20px;
+          letter-spacing:0.04em;font-family:'Noto Sans KR',sans-serif;">Size Information</p>
         <div style="display:flex;gap:20px;align-items:flex-start;margin-bottom:20px;">
           <div style="flex:0 0 38%;">${imgEl2}</div>
           <div style="flex:1;min-width:0;">${fabricHtml}</div>
@@ -854,7 +854,7 @@ function renderSectionHTML(section) {
           </div>
           ${dataRows2}
         </div>
-        ${note ? `<p style="font-size:11px;color:#aaa;text-align:center;margin:12px 0 0;
+        ${note ? `<p style="font-size:12px;color:#777;text-align:center;margin:12px 0 0;
           font-family:'Noto Sans KR',sans-serif;">${note}</p>` : ''}
       </div>`;
     }
