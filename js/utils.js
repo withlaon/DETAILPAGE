@@ -747,11 +747,27 @@ function renderSectionHTML(section) {
       ];
 
       const fabricHtml = FABRIC_ROWS.map(({ key, label, options }) => {
-        const sel = section[key] || options[0];
+        const rawSel = section[key] || options[0];
+        // 계절느낌은 쉼표 구분 다중 선택, 나머지는 단일 선택
+        const isMulti = (key === 'fabricSeason');
+        const selArr = isMulti ? rawSel.split(',').map(s => s.trim()).filter(Boolean) : null;
+
         const optSpans = options.map(opt => {
-          const active = sel === opt;
-          const clickA = isEditor
-            ? `onclick="event.stopPropagation();updateSectionAndRender('${id}','${key}','${opt}')"` : '';
+          const active = isMulti ? selArr.includes(opt) : (rawSel === opt);
+          let clickA = '';
+          if (isEditor) {
+            if (isMulti) {
+              clickA = `onclick="event.stopPropagation();(function(){` +
+                `var arr='${rawSel}'.split(',').map(function(s){return s.trim();}).filter(Boolean);` +
+                `var i=arr.indexOf('${opt}');` +
+                `if(i>=0){arr.splice(i,1);}else{arr.push('${opt}');}` +
+                `if(!arr.length)arr=['봄'];` +
+                `updateSectionAndRender('${id}','${key}',arr.join(','));` +
+                `})()"`;
+            } else {
+              clickA = `onclick="event.stopPropagation();updateSectionAndRender('${id}','${key}','${opt}')"`;
+            }
+          }
           return `<span ${clickA}
             style="font-size:13px;font-family:'Noto Sans KR',sans-serif;
               display:inline-flex;align-items:center;gap:2px;

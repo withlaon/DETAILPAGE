@@ -209,6 +209,7 @@ const CATEGORY_SIZEINFO = {
   '여성-반팔': {
     variant: 'clothing',
     bgColor: '#ffffff', padding: 24,
+    imageUrl: './assets/sizeinfo-shortsleeve.png',
     fabricBichim: '없음', fabricThickness: '적당함',
     fabricStretch: '없음', fabricSeason: '봄', fabricLining: '없음',
     colCount: 5,
@@ -220,6 +221,7 @@ const CATEGORY_SIZEINFO = {
   '여성-긴팔': {
     variant: 'clothing',
     bgColor: '#ffffff', padding: 24,
+    imageUrl: './assets/sizeinfo-longsleeve.png',
     fabricBichim: '없음', fabricThickness: '적당함',
     fabricStretch: '없음', fabricSeason: '가을', fabricLining: '없음',
     colCount: 5,

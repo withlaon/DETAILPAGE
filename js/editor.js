@@ -885,15 +885,24 @@ function renderSizeInfoProps(sec) {
       { key: 'fabricLining',    label: '안감',     options: ['있음', '없음'] },
     ];
     const fabricInputs = FABRIC_DEFS.map(({ key, label, options }) => {
-      const sel = sec[key] || options[0];
+      const rawSel = sec[key] || options[0];
+      const isMulti = (key === 'fabricSeason');
+      const selArr = isMulti ? rawSel.split(',').map(s => s.trim()).filter(Boolean) : null;
       const btns = options.map(opt => {
-        const active = sel === opt;
-        return `<button onclick="updateSectionAndRender('${sec.id}','${key}','${opt}');renderPropPanel()"
+        const active = isMulti ? selArr.includes(opt) : (rawSel === opt);
+        const clickHandler = isMulti
+          ? `(function(){var arr='${rawSel}'.split(',').map(function(s){return s.trim();}).filter(Boolean);` +
+            `var i=arr.indexOf('${opt}');` +
+            `if(i>=0){arr.splice(i,1);}else{arr.push('${opt}');}` +
+            `if(!arr.length)arr=['봄'];` +
+            `updateSectionAndRender('${sec.id}','${key}',arr.join(','));renderPropPanel();})()`
+          : `updateSectionAndRender('${sec.id}','${key}','${opt}');renderPropPanel()`;
+        return `<button onclick="${clickHandler}"
           class="px-2.5 py-1 text-xs rounded-lg border transition-colors
             ${active ? 'bg-indigo-600 text-white border-indigo-600 font-semibold' : 'border-slate-200 text-slate-600 hover:border-indigo-300'}">${opt}</button>`;
       }).join('');
       return `<div class="mb-2.5">
-        <label class="prop-label">${label}</label>
+        <label class="prop-label">${label}${isMulti ? '<span class="text-indigo-400 ml-1 font-normal">(중복선택)</span>' : ''}</label>
         <div class="flex flex-wrap gap-1">${btns}</div>
       </div>`;
     }).join('');
