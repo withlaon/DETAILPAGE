@@ -875,6 +875,116 @@ function renderModelFitProps(sec) {
 function renderSizeInfoProps(sec) {
   const panel = document.getElementById('propPanel');
 
+  // ── 의류 clothing variant ────────────────────────
+  if (sec.variant === 'clothing') {
+    const FABRIC_DEFS = [
+      { key: 'fabricBichim',    label: '비침',     options: ['없음', '약간', '있음'] },
+      { key: 'fabricThickness', label: '두께감',   options: ['얇음', '적당함', '두꺼움'] },
+      { key: 'fabricStretch',   label: '신축성',   options: ['없음', '적당함', '아주좋음'] },
+      { key: 'fabricSeason',    label: '계절느낌', options: ['봄', '여름', '가을', '겨울'] },
+      { key: 'fabricLining',    label: '안감',     options: ['있음', '없음'] },
+    ];
+    const fabricInputs = FABRIC_DEFS.map(({ key, label, options }) => {
+      const sel = sec[key] || options[0];
+      const btns = options.map(opt => {
+        const active = sel === opt;
+        return `<button onclick="updateSectionAndRender('${sec.id}','${key}','${opt}');renderPropPanel()"
+          class="px-2.5 py-1 text-xs rounded-lg border transition-colors
+            ${active ? 'bg-indigo-600 text-white border-indigo-600 font-semibold' : 'border-slate-200 text-slate-600 hover:border-indigo-300'}">${opt}</button>`;
+      }).join('');
+      return `<div class="mb-2.5">
+        <label class="prop-label">${label}</label>
+        <div class="flex flex-wrap gap-1">${btns}</div>
+      </div>`;
+    }).join('');
+
+    const colCount  = sec.colCount || 5;
+    const rowCount  = sec.rowCount || 1;
+    let colInputs = '';
+    for (let c = 1; c <= colCount; c++) {
+      colInputs += `<input type="text" class="prop-input mb-1" placeholder="항목${c}" value="${sec[`col${c}`]||''}"
+        oninput="updateSectionAndRender('${sec.id}','col${c}',this.value)">`;
+    }
+    let rowInputs = '';
+    for (let r = 1; r <= rowCount; r++) {
+      let valInputs = '';
+      for (let c = 1; c <= colCount; c++) {
+        valInputs += `<input type="text" class="prop-input" style="flex:1;min-width:0;" placeholder="값"
+          value="${sec[`row${r}v${c}`]||''}"
+          oninput="updateSectionAndRender('${sec.id}','row${r}v${c}',this.value)">`;
+      }
+      rowInputs += `<div class="mb-2 border border-slate-100 rounded-lg p-2">
+        <label class="prop-label">행 ${r} — 사이즈명</label>
+        <input type="text" class="prop-input mb-2" placeholder="예) FREE, S, M, L"
+          value="${sec[`row${r}size`]||''}"
+          oninput="updateSectionAndRender('${sec.id}','row${r}size',this.value)">
+        <label class="prop-label">값 (컬럼 순서대로)</label>
+        <div class="flex gap-1">${valInputs}</div>
+      </div>`;
+    }
+
+    panel.innerHTML = `
+      <div class="px-4 py-3 bg-indigo-50 border-b border-indigo-100">
+        <span class="text-sm font-bold text-indigo-800">사이즈 정보 (의류형)</span>
+      </div>
+      <div class="prop-section">
+        <label class="prop-label">사이즈 이미지 (왼쪽, 선택)</label>
+        ${sec.imageUrl ? `<img src="${sec.imageUrl}" class="w-full rounded-lg mb-2 object-contain max-h-24 border border-slate-100">` : ''}
+        <div class="upload-zone" onclick="triggerImageUpload('${sec.id}')"
+             ondragover="event.preventDefault();this.classList.add('dragover')"
+             ondragleave="this.classList.remove('dragover')"
+             ondrop="event.preventDefault();this.classList.remove('dragover');handleDrop(event,'${sec.id}')">
+          <p class="text-xs text-indigo-600 font-medium">클릭 또는 드래그하여 업로드</p>
+        </div>
+      </div>
+      <div class="prop-section">
+        <label class="prop-label">원단 특성</label>
+        ${fabricInputs}
+      </div>
+      <div class="prop-section">
+        <label class="prop-label">컬럼 헤더 (${colCount}개)</label>
+        ${colInputs}
+        <div class="flex gap-2 mt-1">
+          <button onclick="updateSectionAndRender('${sec.id}','colCount',${Math.max(1,colCount-1)});renderPropPanel()"
+            class="flex-1 py-1 text-xs border border-slate-200 rounded text-slate-600 hover:bg-slate-50">− 컬럼</button>
+          <button onclick="updateSectionAndRender('${sec.id}','colCount',${colCount+1});renderPropPanel()"
+            class="flex-1 py-1 text-xs border border-slate-200 rounded text-slate-600 hover:bg-slate-50">+ 컬럼</button>
+        </div>
+      </div>
+      <div class="prop-section">
+        <label class="prop-label">행 데이터</label>
+        ${rowInputs}
+        <div class="flex gap-2 mt-1">
+          <button onclick="updateSectionAndRender('${sec.id}','rowCount',${Math.max(1,rowCount-1)});renderPropPanel()"
+            class="flex-1 py-1 text-xs border border-slate-200 rounded text-slate-600 hover:bg-slate-50">− 행</button>
+          <button onclick="updateSectionAndRender('${sec.id}','rowCount',${rowCount+1});renderPropPanel()"
+            class="flex-1 py-1 text-xs border border-slate-200 rounded text-slate-600 hover:bg-slate-50">+ 행</button>
+        </div>
+      </div>
+      <div class="prop-section">
+        <label class="prop-label">안내 문구</label>
+        <input type="text" class="prop-input" placeholder="단위: cm / 오차 안내 등"
+          value="${sec.note||''}"
+          oninput="updateSectionAndRender('${sec.id}','note',this.value)">
+      </div>
+      <div class="prop-section">
+        <label class="prop-label">배경 색상</label>
+        <div class="flex items-center gap-2">
+          <input type="color" value="${sec.bgColor||'#ffffff'}" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+            oninput="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+          <input type="text" class="prop-input" value="${sec.bgColor||'#ffffff'}"
+            onchange="updateSectionAndRender('${sec.id}','bgColor',this.value)">
+        </div>
+      </div>
+      <div class="prop-section flex gap-2">
+        <button onclick="moveSectionUp('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↑ 위로</button>
+        <button onclick="moveSectionDown('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg">↓ 아래로</button>
+        <button onclick="duplicateSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-indigo-600 hover:bg-indigo-50 border border-indigo-200 rounded-lg">복제</button>
+        <button onclick="deleteSection('${sec.id}')" class="flex-1 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg">삭제</button>
+      </div>`;
+    return;
+  }
+
   // ── 양산 parasol variant ──────────────────────────
   if (sec.variant === 'parasol') {
     const mkGroupInputs = (gKey, gLabel) => {

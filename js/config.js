@@ -11,7 +11,7 @@ const CONFIG = {
 };
 
 // 카테고리 목록 (localStorage 영속)
-const DEFAULT_CATEGORIES = ['가방', '모자', '의류', '양산'];
+const DEFAULT_CATEGORIES = ['가방', '모자', '여성-반팔', '여성-긴팔', '여성-반바지', '여성-긴바지', '여성-치마', '양산'];
 
 function getCategories() {
   try {
@@ -23,6 +23,22 @@ function getCategories() {
 
 function saveCategories(cats) {
   localStorage.setItem('dc_categories', JSON.stringify(cats));
+}
+
+// '의류' → 여성- 5개 카테고리로 자동 마이그레이션 (기존 사용자 localStorage 대응)
+function migrateCategories() {
+  const cats = getCategories();
+  if (cats.includes('의류') && !cats.some(c => c.startsWith('여성-'))) {
+    const idx = cats.indexOf('의류');
+    const newCats = [
+      ...cats.slice(0, idx),
+      '여성-반팔', '여성-긴팔', '여성-반바지', '여성-긴바지', '여성-치마',
+      ...cats.slice(idx + 1),
+    ];
+    saveCategories(newCats);
+    return newCats;
+  }
+  return cats;
 }
 
 function addCategory(name) {
@@ -189,6 +205,54 @@ const TEMPLATES = [
 
 // 카테고리별 사이즈 정보 섹션 기본값
 const CATEGORY_SIZEINFO = {
+  // ── 여성-반팔 / 여성-긴팔: 원단특성 + 사이즈표 ──
+  '여성-반팔': {
+    variant: 'clothing',
+    bgColor: '#ffffff', padding: 24,
+    fabricBichim: '없음', fabricThickness: '적당함',
+    fabricStretch: '없음', fabricSeason: '봄', fabricLining: '없음',
+    colCount: 5,
+    col1: '가슴단면', col2: '밑단단면', col3: '소매길이', col4: '소매단면', col5: '총장',
+    rowCount: 1,
+    row1size: 'FREE', row1v1: '54', row1v2: '48', row1v3: '68', row1v4: '12', row1v5: '43',
+    note: '단위: cm / 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.',
+  },
+  '여성-긴팔': {
+    variant: 'clothing',
+    bgColor: '#ffffff', padding: 24,
+    fabricBichim: '없음', fabricThickness: '적당함',
+    fabricStretch: '없음', fabricSeason: '가을', fabricLining: '없음',
+    colCount: 5,
+    col1: '가슴단면', col2: '밑단단면', col3: '소매길이', col4: '소매단면', col5: '총장',
+    rowCount: 1,
+    row1size: 'FREE', row1v1: '54', row1v2: '48', row1v3: '68', row1v4: '12', row1v5: '43',
+    note: '단위: cm / 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.',
+  },
+  // ── 나머지 의류: 기본 테이블 variant ──
+  '여성-반바지': {
+    variant: 'table', title: 'Size Information',
+    note: '측정 방법에 따라 1~2CM 오차가 있을 수 있습니다.',
+    bgColor: '#ffffff', padding: 24,
+    colCount: 4, col1: '허리단면', col2: '엉덩이단면', col3: '밑위', col4: '총장',
+    rowCount: 1, row1size: 'FREE', row1v1: '-', row1v2: '-', row1v3: '-', row1v4: '-',
+    weight: '-', material: '-',
+  },
+  '여성-긴바지': {
+    variant: 'table', title: 'Size Information',
+    note: '측정 방법에 따라 1~2CM 오차가 있을 수 있습니다.',
+    bgColor: '#ffffff', padding: 24,
+    colCount: 4, col1: '허리단면', col2: '엉덩이단면', col3: '밑위', col4: '총장',
+    rowCount: 1, row1size: 'FREE', row1v1: '-', row1v2: '-', row1v3: '-', row1v4: '-',
+    weight: '-', material: '-',
+  },
+  '여성-치마': {
+    variant: 'table', title: 'Size Information',
+    note: '측정 방법에 따라 1~2CM 오차가 있을 수 있습니다.',
+    bgColor: '#ffffff', padding: 24,
+    colCount: 3, col1: '허리단면', col2: '엉덩이단면', col3: '총장',
+    rowCount: 1, row1size: 'FREE', row1v1: '-', row1v2: '-', row1v3: '-',
+    weight: '-', material: '-',
+  },
   '모자': {
     variant: 'table',
     title: 'Size Information',
@@ -223,10 +287,14 @@ const CATEGORY_SIZEINFO = {
 
 // 카테고리별 대표컷 기본 텍스트
 const CATEGORY_HERO_TEXT = {
-  '가방': { brandText: 'Withlaon Daily Bag', subText: '일상에 특별함을 더하는 데일리 아이템' },
-  '모자': { brandText: 'Withlaon Daily Hat', subText: '일상에 특별함을 더하는 데일리 아이템' },
-  '양산': { brandText: 'Withlaon Daily Parasol', subText: '일상에 특별함을 더하는 데일리 아이템' },
-  '의류': { brandText: 'Withlaon Daily Wear', subText: '일상에 특별함을 더하는 데일리 아이템' },
+  '가방':    { brandText: 'Withlaon Daily Bag',     subText: '일상에 특별함을 더하는 데일리 아이템' },
+  '모자':    { brandText: 'Withlaon Daily Hat',     subText: '일상에 특별함을 더하는 데일리 아이템' },
+  '양산':    { brandText: 'Withlaon Daily Parasol', subText: '일상에 특별함을 더하는 데일리 아이템' },
+  '여성-반팔': { brandText: 'Withlaon Daily Fashion', subText: '일상에 특별함을 더하는 데일리 아이템' },
+  '여성-긴팔': { brandText: 'Withlaon Daily Fashion', subText: '일상에 특별함을 더하는 데일리 아이템' },
+  '여성-반바지':{ brandText: 'Withlaon Daily Fashion', subText: '일상에 특별함을 더하는 데일리 아이템' },
+  '여성-긴바지':{ brandText: 'Withlaon Daily Fashion', subText: '일상에 특별함을 더하는 데일리 아이템' },
+  '여성-치마': { brandText: 'Withlaon Daily Fashion', subText: '일상에 특별함을 더하는 데일리 아이템' },
 };
 
 // Supabase 클라이언트 초기화

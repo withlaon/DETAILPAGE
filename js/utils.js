@@ -731,6 +731,118 @@ function renderSectionHTML(section) {
       </div>`;
     }
 
+    // ── 의류 전용 variant (원단특성 + 사이즈표) ──────
+    if (section.variant === 'clothing') {
+      const bg2  = section.bgColor || '#ffffff';
+      const pad2 = section.padding !== undefined ? section.padding : 24;
+      const note = section.note || '';
+
+      // 원단 특성 정의
+      const FABRIC_ROWS = [
+        { key: 'fabricBichim',    label: '비침',     options: ['없음', '약간', '있음'] },
+        { key: 'fabricThickness', label: '두께감',   options: ['얇음', '적당함', '두꺼움'] },
+        { key: 'fabricStretch',   label: '신축성',   options: ['없음', '적당함', '아주좋음'] },
+        { key: 'fabricSeason',    label: '계절느낌', options: ['봄', '여름', '가을', '겨울'] },
+        { key: 'fabricLining',    label: '안감',     options: ['있음', '없음'] },
+      ];
+
+      const fabricHtml = FABRIC_ROWS.map(({ key, label, options }) => {
+        const sel = section[key] || options[0];
+        const optSpans = options.map(opt => {
+          const active = sel === opt;
+          const clickA = isEditor
+            ? `onclick="event.stopPropagation();updateSectionAndRender('${id}','${key}','${opt}')"` : '';
+          return `<span ${clickA}
+            style="font-size:13px;font-family:'Noto Sans KR',sans-serif;
+              display:inline-flex;align-items:center;gap:2px;
+              ${active ? 'font-weight:700;color:#1a1a1a;' : 'color:#bbb;'}
+              ${isEditor ? 'cursor:pointer;user-select:none;' : ''}">
+            <span style="font-size:11px;line-height:1;">${active ? '■' : '□'}</span>${opt}
+          </span>`;
+        }).join('<span style="color:#e0e0e0;margin:0 3px;font-size:11px;">|</span>');
+        return `<div style="display:flex;align-items:center;padding:8px 4px;border-bottom:1px solid #f5f5f5;">
+          <span style="font-size:13px;font-weight:600;color:#555;min-width:60px;
+            font-family:'Noto Sans KR',sans-serif;">${label}</span>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${optSpans}</div>
+        </div>`;
+      }).join('');
+
+      // 사이즈 테이블
+      const colCount2  = section.colCount || 5;
+      const rowCount2  = section.rowCount || 1;
+      const cols2 = [];
+      for (let c = 1; c <= colCount2; c++) cols2.push(section[`col${c}`] || `항목${c}`);
+      const rowsData2 = [];
+      for (let r = 1; r <= rowCount2; r++) {
+        const sz = section[`row${r}size`] || '-';
+        const vals = [];
+        for (let c = 1; c <= colCount2; c++) vals.push(section[`row${r}v${c}`] || '-');
+        rowsData2.push({ size: sz, values: vals });
+      }
+      const colHeaders2 = cols2.map(c =>
+        `<div style="flex:1;font-size:13px;font-weight:600;color:#444;text-align:center;
+          font-family:'Noto Sans KR',sans-serif;">${c}</div>`).join('');
+      const dataRows2 = rowsData2.map(row => {
+        const vals = row.values.map(v =>
+          `<div style="flex:1;font-size:13px;color:#555;text-align:center;
+            font-family:'Noto Sans KR',sans-serif;">${v}</div>`).join('');
+        return `<div style="display:flex;align-items:center;padding:11px 0;border-bottom:1px solid #f0f0f0;">
+          <div style="flex:1;font-size:14px;font-weight:800;color:#1a1a1a;
+            font-family:'Noto Sans KR',sans-serif;">${row.size}</div>
+          ${vals}
+        </div>`;
+      }).join('');
+
+      // 왼쪽 이미지 (선택)
+      const imgUrl2 = section.imageUrl || '';
+      const clickA2 = isEditor ? `onclick="event.stopPropagation();triggerImageUpload('${id}')"` : '';
+      const dropA2  = isEditor
+        ? `ondragover="event.stopPropagation();handleCanvasDragOver(event,this)"
+           ondragleave="handleCanvasDragLeave(event,this)"
+           ondrop="handleCanvasDrop(event,'${id}',0)"` : '';
+      const imgEl2 = imgUrl2
+        ? `<div ${clickA2} ${dropA2} style="${isEditor?'cursor:pointer;':''}">
+            <img src="${imgUrl2}" style="width:100%;display:block;border-radius:10px;object-fit:contain;max-height:280px;">
+          </div>`
+        : `<div ${clickA2} ${dropA2}
+            style="min-height:180px;background:#f5f5f5;border:2px dashed #ddd;border-radius:10px;
+              display:flex;flex-direction:column;align-items:center;justify-content:center;
+              gap:8px;${isEditor?'cursor:pointer;':''}"
+            ${isEditor?`onmouseenter="this.style.background='#eef2ff';this.style.borderColor='#7c3aed'"
+              onmouseleave="this.style.background='#f5f5f5';this.style.borderColor='#ddd'"`:''}>
+            <svg width="28" height="28" fill="none" stroke="#ccc" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86
+                a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2
+                H5a2 2 0 01-2-2V9z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span style="font-size:12px;color:#bbb;font-family:'Noto Sans KR',sans-serif;">사이즈 이미지 업로드</span>
+            ${isEditor?'<span style="font-size:11px;color:#ccc;font-family:\'Noto Sans KR\',sans-serif;">클릭 또는 드래그</span>':''}
+          </div>`;
+
+      return `<div id="${id}" style="background:${bg2};padding:${pad2}px;">
+        <p style="font-size:26px;font-weight:800;color:#1a1a1a;text-align:center;margin:0 0 20px;
+          font-family:'Noto Sans KR',sans-serif;">Size Information</p>
+        <div style="display:flex;gap:20px;align-items:flex-start;margin-bottom:20px;">
+          <div style="flex:0 0 38%;">${imgEl2}</div>
+          <div style="flex:1;min-width:0;">${fabricHtml}</div>
+        </div>
+        <div>
+          <div style="display:flex;align-items:center;padding:10px 0;
+            border-bottom:2px solid #6d28d9;border-top:1px solid #eee;">
+            <div style="flex:1;font-size:13px;font-weight:800;color:#1a1a1a;letter-spacing:0.04em;
+              font-family:'Noto Sans KR',sans-serif;">사이즈 (CM)</div>
+            ${colHeaders2}
+          </div>
+          ${dataRows2}
+        </div>
+        ${note ? `<p style="font-size:11px;color:#aaa;text-align:center;margin:12px 0 0;
+          font-family:'Noto Sans KR',sans-serif;">${note}</p>` : ''}
+      </div>`;
+    }
+
     // ── 양산 전용 variant (그룹별 치수 + 다이어그램) ──
     if (section.variant === 'parasol') {
       const bg2   = section.bgColor || '#faf8ff';

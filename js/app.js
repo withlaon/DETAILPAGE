@@ -11,6 +11,7 @@ let displayLimit = 5;          // 한 번에 표시할 최대 개수
 // ── 초기화 ────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
+  migrateCategories(); // '의류' → 여성-* 5개로 자동 전환
   renderCategoryTabs();
   renderStatsBoxes();
   renderTemplateGrid();
