@@ -234,7 +234,7 @@ const CATEGORY_SIZEINFO = {
   '여성-반바지': {
     variant: 'clothing',
     bgColor: '#ffffff', padding: 24,
-    imageUrl: './assets/sizeinfo-pants.png',
+    imageUrl: './assets/sizeinfo-shorts.png',
     fabricBichim: '없음', fabricThickness: '적당함',
     fabricStretch: '없음', fabricSeason: '봄,여름', fabricLining: '없음',
     colCount: 6,
