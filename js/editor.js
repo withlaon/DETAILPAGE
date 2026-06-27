@@ -971,6 +971,12 @@ function renderSizeInfoProps(sec) {
         </div>
       </div>
       <div class="prop-section">
+        <label class="prop-label">재질</label>
+        <input type="text" class="prop-input" placeholder="예) 면 100%, 폴리에스터 95% 등"
+          value="${sec.material||''}"
+          oninput="updateSectionAndRender('${sec.id}','material',this.value)">
+      </div>
+      <div class="prop-section">
         <label class="prop-label">안내 문구</label>
         <input type="text" class="prop-input" placeholder="단위: cm / 오차 안내 등"
           value="${sec.note||''}"

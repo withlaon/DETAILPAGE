@@ -746,6 +746,15 @@ function renderSectionHTML(section) {
         { key: 'fabricLining',    label: '안감',     options: ['있음', '없음'] },
       ];
 
+      // 재질 표기 행 (안감 아래)
+      const materialVal = section.material || '';
+      const materialRow = `<div style="display:flex;align-items:center;padding:10px 4px;border-bottom:1px solid #f5f5f5;margin-top:4px;">
+        <span style="font-size:15px;font-weight:600;color:#555;min-width:64px;font-family:'Noto Sans KR',sans-serif;">재질</span>
+        <span style="font-size:15px;color:${materialVal ? '#1a1a1a' : '#ccc'};font-family:'Noto Sans KR',sans-serif;">
+          ${materialVal || (isEditor ? '재질을 입력하세요' : '')}
+        </span>
+      </div>`;
+
       const fabricHtml = FABRIC_ROWS.map(({ key, label, options }) => {
         const rawSel = section[key] || options[0];
         // 계절느낌은 쉼표 구분 다중 선택, 나머지는 단일 선택
@@ -843,7 +852,7 @@ function renderSectionHTML(section) {
           letter-spacing:0.04em;font-family:'Noto Sans KR',sans-serif;">Size Information</p>
         <div style="display:flex;gap:20px;align-items:flex-start;margin-bottom:20px;">
           <div style="flex:0 0 38%;">${imgEl2}</div>
-          <div style="flex:1;min-width:0;">${fabricHtml}</div>
+          <div style="flex:1;min-width:0;">${fabricHtml}${materialRow}</div>
         </div>
         <div>
           <div style="display:flex;align-items:center;padding:10px 0;
