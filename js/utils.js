@@ -746,13 +746,15 @@ function renderSectionHTML(section) {
         { key: 'fabricLining',    label: '안감',     options: ['있음', '없음'] },
       ];
 
-      // 재질 표기 행 (안감 아래)
+      // 재질 표기 행 (안감 아래, 여백으로 시각적 분리)
       const materialVal = section.material || '';
-      const materialRow = `<div style="display:flex;align-items:center;padding:10px 4px;border-bottom:1px solid #f5f5f5;margin-top:4px;">
-        <span style="font-size:15px;font-weight:600;color:#555;min-width:64px;font-family:'Noto Sans KR',sans-serif;">재질</span>
-        <span style="font-size:15px;color:${materialVal ? '#1a1a1a' : '#ccc'};font-family:'Noto Sans KR',sans-serif;">
-          ${materialVal || (isEditor ? '재질을 입력하세요' : '')}
-        </span>
+      const materialRow = `<div style="margin-top:14px;border-top:1px solid #ebebeb;padding-top:10px;">
+        <div style="display:flex;align-items:center;padding:8px 4px;border-bottom:1px solid #f5f5f5;">
+          <span style="font-size:15px;font-weight:600;color:#555;min-width:64px;font-family:'Noto Sans KR',sans-serif;">재질</span>
+          <span style="font-size:15px;color:${materialVal ? '#1a1a1a' : '#ccc'};font-family:'Noto Sans KR',sans-serif;">
+            ${materialVal || (isEditor ? '재질을 입력하세요' : '')}
+          </span>
+        </div>
       </div>`;
 
       const fabricHtml = FABRIC_ROWS.map(({ key, label, options }) => {
