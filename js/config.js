@@ -262,11 +262,12 @@ const CATEGORY_SIZEINFO = {
   '여성-치마': {
     variant: 'clothing',
     bgColor: '#ffffff', padding: 24,
+    imageUrl: './assets/sizeinfo-skirt.png',
     fabricBichim: '없음', fabricThickness: '적당함',
     fabricStretch: '없음', fabricSeason: '봄,가을', fabricLining: '없음',
     material: '',
-    colCount: 3, col1: '허리단면', col2: '엉덩이단면', col3: '총장',
-    rowCount: 1, row1size: 'FREE', row1v1: '-', row1v2: '-', row1v3: '-',
+    colCount: 4, col1: '허리단면', col2: '힙단면', col3: '밑단', col4: '총길이',
+    rowCount: 1, row1size: 'FREE', row1v1: '-', row1v2: '-', row1v3: '-', row1v4: '-',
     note: '단위: cm / 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.',
   },
   '모자': {
