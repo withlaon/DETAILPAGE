@@ -11,7 +11,7 @@ const CONFIG = {
 };
 
 // 카테고리 목록 (localStorage 영속)
-const DEFAULT_CATEGORIES = ['가방', '모자', '여성-반팔', '여성-긴팔', '여성-반바지', '여성-긴바지', '여성-치마', '양산'];
+const DEFAULT_CATEGORIES = ['가방', '모자', '여성-반팔', '여성-긴팔', '여성-반바지', '여성-긴바지', '여성-치마', '여성-원피스', '양산'];
 
 function getCategories() {
   try {
@@ -25,19 +25,34 @@ function saveCategories(cats) {
   localStorage.setItem('dc_categories', JSON.stringify(cats));
 }
 
-// '의류' → 여성- 5개 카테고리로 자동 마이그레이션 (기존 사용자 localStorage 대응)
+// 카테고리 마이그레이션 (기존 사용자 localStorage 대응)
 function migrateCategories() {
-  const cats = getCategories();
+  let cats = getCategories();
+  let changed = false;
+
+  // '의류' → 여성- 5개로 전환
   if (cats.includes('의류') && !cats.some(c => c.startsWith('여성-'))) {
     const idx = cats.indexOf('의류');
-    const newCats = [
+    cats = [
       ...cats.slice(0, idx),
       '여성-반팔', '여성-긴팔', '여성-반바지', '여성-긴바지', '여성-치마',
       ...cats.slice(idx + 1),
     ];
-    saveCategories(newCats);
-    return newCats;
+    changed = true;
   }
+
+  // '여성-원피스' 누락 시 여성-치마 뒤에 삽입
+  if (!cats.includes('여성-원피스')) {
+    const idx = cats.indexOf('여성-치마');
+    if (idx >= 0) {
+      cats = [...cats.slice(0, idx + 1), '여성-원피스', ...cats.slice(idx + 1)];
+    } else {
+      cats = [...cats, '여성-원피스'];
+    }
+    changed = true;
+  }
+
+  if (changed) saveCategories(cats);
   return cats;
 }
 
@@ -259,6 +274,22 @@ const CATEGORY_SIZEINFO = {
     row1size: 'FREE', row1v1: '-', row1v2: '-', row1v3: '-', row1v4: '-', row1v5: '-', row1v6: '-',
     note: '단위: cm / 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.',
   },
+  '여성-원피스': {
+    variant: 'clothing',
+    bgColor: '#ffffff', padding: 24,
+    imageUrl: './assets/sizeinfo-dress.png',
+    fabricBichim: '없음', fabricThickness: '적당함',
+    fabricStretch: '없음', fabricSeason: '봄,가을', fabricLining: '없음',
+    material: '',
+    colCount: 8,
+    col1: '어깨단면', col2: '암홀', col3: '가슴단면', col4: '소매길이',
+    col5: '소매단면', col6: '허리단면', col7: '밑단', col8: '총길이',
+    rowCount: 1,
+    row1size: 'FREE',
+    row1v1: '-', row1v2: '-', row1v3: '-', row1v4: '-',
+    row1v5: '-', row1v6: '-', row1v7: '-', row1v8: '-',
+    note: '단위: cm / 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.',
+  },
   '여성-치마': {
     variant: 'clothing',
     bgColor: '#ffffff', padding: 24,
@@ -311,7 +342,8 @@ const CATEGORY_HERO_TEXT = {
   '여성-긴팔': { brandText: 'Withlaon Daily Fashion', subText: '일상에 특별함을 더하는 데일리 아이템' },
   '여성-반바지':{ brandText: 'Withlaon Daily Fashion', subText: '일상에 특별함을 더하는 데일리 아이템' },
   '여성-긴바지':{ brandText: 'Withlaon Daily Fashion', subText: '일상에 특별함을 더하는 데일리 아이템' },
-  '여성-치마': { brandText: 'Withlaon Daily Fashion', subText: '일상에 특별함을 더하는 데일리 아이템' },
+  '여성-치마':  { brandText: 'Withlaon Daily Fashion', subText: '일상에 특별함을 더하는 데일리 아이템' },
+  '여성-원피스': { brandText: 'Withlaon Daily Fashion', subText: '일상에 특별함을 더하는 데일리 아이템' },
 };
 
 // Supabase 클라이언트 초기화
