@@ -1757,9 +1757,42 @@ async function savePage() {
   }
 }
 
+// ── base64 이미지 압축 (저장 전 payload 크기 축소) ──
+function compressBase64Image(dataUrl, maxWidth = 900, quality = 0.65) {
+  return new Promise(resolve => {
+    if (!dataUrl || !dataUrl.startsWith('data:image')) return resolve(dataUrl);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxWidth / img.width);
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const cvs = document.createElement('canvas');
+      cvs.width = w; cvs.height = h;
+      cvs.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(cvs.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+async function compressSections(sections) {
+  const copy = JSON.parse(JSON.stringify(sections));
+  for (const sec of copy) {
+    for (const key of Object.keys(sec)) {
+      if (typeof sec[key] === 'string' && sec[key].startsWith('data:image')) {
+        sec[key] = await compressBase64Image(sec[key]);
+      }
+    }
+  }
+  return copy;
+}
+
 // db.js의 savePage와 이름 충돌 방지
 async function savePageDB(data) {
-  return await savePage_db(data);
+  // 저장 전 base64 이미지 압축으로 payload 크기 최소화
+  const compressed = { ...data, sections: await compressSections(data.sections || []) };
+  return await savePage_db(compressed);
 }
 
 // ── JPEG 다운로드 ─────────────────────────────

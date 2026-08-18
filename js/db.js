@@ -78,22 +78,19 @@ async function savePage_db(pageData) {
   };
 
   if (pageData.id) {
-    const { data, error } = await sb
-      .from(CONFIG.TABLE_NAME)
-      .update(payload)
-      .eq('id', pageData.id)
-      .select()
-      .single();
-    if (error) throw error;
+    const { data, error } = await withTimeout(
+      sb.from(CONFIG.TABLE_NAME).update(payload).eq('id', pageData.id).select().single(),
+      25000, '저장'
+    );
+    if (error) throw new Error(error.message || '저장 실패');
     return data;
   } else {
     payload.created_at = new Date().toISOString();
-    const { data, error } = await sb
-      .from(CONFIG.TABLE_NAME)
-      .insert(payload)
-      .select()
-      .single();
-    if (error) throw error;
+    const { data, error } = await withTimeout(
+      sb.from(CONFIG.TABLE_NAME).insert(payload).select().single(),
+      25000, '저장'
+    );
+    if (error) throw new Error(error.message || '저장 실패');
     return data;
   }
 }

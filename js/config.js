@@ -241,10 +241,10 @@ const CATEGORY_SIZEINFO = {
     fabricBichim: '없음', fabricThickness: '적당함',
     fabricStretch: '없음', fabricSeason: '가을', fabricLining: '없음',
     material: '',
-    colCount: 5,
-    col1: '가슴단면', col2: '밑단단면', col3: '소매길이', col4: '소매단면', col5: '총장',
+    colCount: 6,
+    col1: '어깨단면', col2: '가슴단면', col3: '밑단단면', col4: '소매길이', col5: '소매단면', col6: '총장',
     rowCount: 1,
-    row1size: 'FREE', row1v1: '54', row1v2: '48', row1v3: '68', row1v4: '12', row1v5: '43',
+    row1size: 'FREE', row1v1: '-', row1v2: '54', row1v3: '48', row1v4: '68', row1v5: '12', row1v6: '43',
     note: '단위: cm / 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.',
   },
   // ── 나머지 의류: clothing variant ──
