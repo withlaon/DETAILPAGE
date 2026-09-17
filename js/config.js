@@ -11,7 +11,7 @@ const CONFIG = {
 };
 
 // 카테고리 목록 (localStorage 영속)
-const DEFAULT_CATEGORIES = ['가방', '모자', '여성-반팔', '여성-긴팔', '여성-반바지', '여성-긴바지', '여성-치마', '여성-원피스', '양산'];
+const DEFAULT_CATEGORIES = ['가방', '모자', '여성-반팔', '여성-긴팔', '여성-조끼', '여성-반바지', '여성-긴바지', '여성-치마', '여성-원피스', '양산'];
 
 function getCategories() {
   try {
@@ -38,6 +38,17 @@ function migrateCategories() {
       '여성-반팔', '여성-긴팔', '여성-반바지', '여성-긴바지', '여성-치마',
       ...cats.slice(idx + 1),
     ];
+    changed = true;
+  }
+
+  // '여성-조끼' 누락 시 여성-긴팔 뒤에 삽입
+  if (!cats.includes('여성-조끼')) {
+    const idx = cats.indexOf('여성-긴팔');
+    if (idx >= 0) {
+      cats = [...cats.slice(0, idx + 1), '여성-조끼', ...cats.slice(idx + 1)];
+    } else {
+      cats = [...cats, '여성-조끼'];
+    }
     changed = true;
   }
 
@@ -274,6 +285,19 @@ const CATEGORY_SIZEINFO = {
     row1size: 'FREE', row1v1: '-', row1v2: '-', row1v3: '-', row1v4: '-', row1v5: '-', row1v6: '-',
     note: '단위: cm / 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.',
   },
+  '여성-조끼': {
+    variant: 'clothing',
+    bgColor: '#ffffff', padding: 24,
+    imageUrl: './assets/sizeinfo-vest.png',
+    fabricBichim: '없음', fabricThickness: '적당함',
+    fabricStretch: '없음', fabricSeason: '봄,가을', fabricLining: '없음',
+    material: '',
+    colCount: 5,
+    col1: '어깨단면', col2: '암홀깊이', col3: '가슴단면', col4: '총장', col5: '밑단단면',
+    rowCount: 1,
+    row1size: 'FREE', row1v1: '-', row1v2: '-', row1v3: '-', row1v4: '-', row1v5: '-',
+    note: '단위: cm / 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.',
+  },
   '여성-원피스': {
     variant: 'clothing',
     bgColor: '#ffffff', padding: 24,
@@ -344,6 +368,7 @@ const CATEGORY_HERO_TEXT = {
   '여성-긴바지':{ brandText: 'Withlaon Daily Fashion', subText: '일상에 특별함을 더하는 데일리 아이템' },
   '여성-치마':  { brandText: 'Withlaon Daily Fashion', subText: '일상에 특별함을 더하는 데일리 아이템' },
   '여성-원피스': { brandText: 'Withlaon Daily Fashion', subText: '일상에 특별함을 더하는 데일리 아이템' },
+  '여성-조끼':  { brandText: 'Withlaon Daily Fashion', subText: '일상에 특별함을 더하는 데일리 아이템' },
 };
 
 // Supabase 클라이언트 초기화
